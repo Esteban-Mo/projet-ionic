@@ -59,6 +59,26 @@ const NoImagePlaceholder: React.FC<{ name: string }> = ({ name }) => (
   </div>
 );
 
+const getBadgeInfo = (totalHours: number): { label: string; color: string; icon: string } => {
+  if (totalHours >= 50) return { label: 'Expert', color: 'var(--ion-color-warning)', icon: '🏆' };
+  if (totalHours >= 10) return { label: 'Passionné', color: 'var(--ion-color-success)', icon: '🎮' };
+  if (totalHours >= 2) return { label: 'Amateur', color: 'var(--ion-color-primary)', icon: '🎯' };
+  return { label: 'Débutant', color: 'var(--ion-color-medium)', icon: '🌟' };
+};
+
+const formatLastPlayed = (date?: Date): string => {
+  if (!date) return 'Pas encore joué';
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) return 'Aujourd\'hui';
+  if (days === 1) return 'Hier';
+  if (days < 7) return `Il y a ${days} jours`;
+  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaine${Math.floor(days / 7) > 1 ? 's' : ''}`;
+  return `Il y a ${Math.floor(days / 30)} mois`;
+};
+
 const GameCard: React.FC<{
   game: Game;
   stats: GameStats;
@@ -70,200 +90,244 @@ const GameCard: React.FC<{
   onDelete: () => void;
   onToggleFavorite: () => void;
   formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => (
-  <IonCard style={{ 
-    margin: '16px', 
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-  }}>
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      background: 'var(--ion-background-color)',
-      height: '100%'
+}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => {
+  const totalHours = stats.totalTime / 60;
+  const badge = getBadgeInfo(totalHours);
+  const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
+  
+  return (
+    <IonCard style={{ 
+      margin: '16px', 
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
     }}>
       <div style={{ 
-        position: 'relative',
-        paddingTop: '56.25%', // Ratio 16:9
-        overflow: 'hidden',
-        backgroundColor: 'var(--ion-color-step-50)'
+        display: 'flex', 
+        flexDirection: 'column',
+        background: 'var(--ion-background-color)',
+        height: '100%'
       }}>
-        {game.coverImage && game.coverImage !== 'N/A' ? (
-          <img 
-            src={game.coverImage} 
-            alt={game.name}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transition: 'transform 0.3s ease',
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
-        ) : (
-          <NoImagePlaceholder name={game.name} />
-        )}
-      </div>
-      
-      <div style={{ padding: '20px' }}>
         <div style={{ 
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start'
+          position: 'relative',
+          paddingTop: '56.25%', // Ratio 16:9
+          overflow: 'hidden',
+          backgroundColor: 'var(--ion-color-step-50)'
         }}>
-          <div>
-            <h2 style={{ 
-              margin: '0 0 8px 0',
-              fontSize: '1.4em',
-              fontWeight: '600'
-            }}>
-              {game.name}
-            </h2>
-            {game.genre && (
-              <div style={{ 
-                display: 'inline-block',
-                padding: '4px 12px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--ion-color-primary)',
-                color: 'white',
-                fontSize: '0.8em',
-                fontWeight: '500'
-              }}>
-                {game.genre}
-              </div>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <IonButton
-              fill="clear"
-              color={game.isFavorite ? 'warning' : 'medium'}
-              onClick={onToggleFavorite}
-              style={{ 
-                margin: '-10px -10px 0 0',
-                '--padding-start': '8px',
-                '--padding-end': '8px',
-                opacity: game.isFavorite ? 1 : 0.6
+          {game.coverImage && game.coverImage !== 'N/A' ? (
+            <img 
+              src={game.coverImage} 
+              alt={game.name}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 0.3s ease',
               }}
-            >
-              <IonIcon 
-                icon={game.isFavorite ? star : starOutline} 
-                style={{ fontSize: '1.2em' }}
-              />
-            </IonButton>
-            <IonButton
-              fill="clear"
-              color="medium"
-              onClick={onDelete}
-              style={{ 
-                margin: '-10px -10px 0 0',
-                '--padding-start': '8px',
-                '--padding-end': '8px',
-                opacity: '0.6'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
               }}
-            >
-              <IonIcon 
-                icon={trash} 
-                style={{ fontSize: '1.1em' }}
-              />
-            </IonButton>
-          </div>
+            />
+          ) : (
+            <NoImagePlaceholder name={game.name} />
+          )}
         </div>
-
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '12px',
-          marginBottom: '20px'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              fontSize: '1.2em', 
-              fontWeight: '600',
-              color: 'var(--ion-color-primary)'
-            }}>
-              {stats.sessionsCount}
-            </div>
-            <div style={{ 
-              fontSize: '0.8em',
-              color: 'var(--ion-color-medium)',
-              marginTop: '4px'
-            }}>
-              Sessions
-            </div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              fontSize: '1.2em', 
-              fontWeight: '600',
-              color: 'var(--ion-color-secondary)'
-            }}>
-              {formatDuration(stats.totalTime)}
-            </div>
-            <div style={{ 
-              fontSize: '0.8em',
-              color: 'var(--ion-color-medium)',
-              marginTop: '4px'
-            }}>
-              Temps de jeu
-            </div>
-          </div>
-        </div>
-
-        {isActiveGame && (
+        
+        <div style={{ padding: '20px' }}>
           <div style={{ 
+            marginBottom: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start'
+          }}>
+            <div>
+              <h2 style={{ 
+                margin: '0 0 8px 0',
+                fontSize: '1.4em',
+                fontWeight: '600'
+              }}>
+                {game.name}
+              </h2>
+              {game.genre && (
+                <div style={{ 
+                  display: 'inline-block',
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--ion-color-primary)',
+                  color: 'white',
+                  fontSize: '0.8em',
+                  fontWeight: '500'
+                }}>
+                  {game.genre}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <IonButton
+                fill="clear"
+                color={game.isFavorite ? 'warning' : 'medium'}
+                onClick={onToggleFavorite}
+                style={{ 
+                  margin: '-10px -10px 0 0',
+                  '--padding-start': '8px',
+                  '--padding-end': '8px',
+                  opacity: game.isFavorite ? 1 : 0.6
+                }}
+              >
+                <IonIcon 
+                  icon={game.isFavorite ? star : starOutline} 
+                  style={{ fontSize: '1.2em' }}
+                />
+              </IonButton>
+              <IonButton
+                fill="clear"
+                color="medium"
+                onClick={onDelete}
+                style={{ 
+                  margin: '-10px -10px 0 0',
+                  '--padding-start': '8px',
+                  '--padding-end': '8px',
+                  opacity: '0.6'
+                }}
+              >
+                <IonIcon 
+                  icon={trash} 
+                  style={{ fontSize: '1.1em' }}
+                />
+              </IonButton>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '16px',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            backgroundColor: `${badge.color}15`,
+            color: badge.color
+          }}>
+            <span style={{ fontSize: '1.2em' }}>{badge.icon}</span>
+            <span style={{ fontWeight: '500' }}>{badge.label}</span>
+          </div>
+
+          <div style={{ 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '12px',
+            marginBottom: '20px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ 
+                fontSize: '1.2em', 
+                fontWeight: '600',
+                color: 'var(--ion-color-primary)'
+              }}>
+                {stats.sessionsCount}
+              </div>
+              <div style={{ 
+                fontSize: '0.8em',
+                color: 'var(--ion-color-medium)',
+                marginTop: '4px'
+              }}>
+                Sessions
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ 
+                fontSize: '1.2em', 
+                fontWeight: '600',
+                color: 'var(--ion-color-secondary)'
+              }}>
+                {formatDuration(stats.totalTime)}
+              </div>
+              <div style={{ 
+                fontSize: '0.8em',
+                color: 'var(--ion-color-medium)',
+                marginTop: '4px'
+              }}>
+                Temps total
+              </div>
+            </div>
+          </div>
+
+          <div style={{
             marginBottom: '20px',
             padding: '12px',
-            borderRadius: '12px',
-            backgroundColor: 'var(--ion-color-warning)',
-            color: 'white',
-            textAlign: 'center',
-            fontWeight: '500',
-            fontSize: '1.1em'
+            borderRadius: '8px',
+            backgroundColor: 'var(--ion-color-light)',
+            fontSize: '0.9em'
           }}>
-            Session en cours: {currentSessionTime}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              marginBottom: '8px'
+            }}>
+              <span style={{ color: 'var(--ion-color-medium)' }}>Moyenne par session:</span>
+              <span style={{ fontWeight: '500' }}>{formatDuration(averageSessionTime)}</span>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between'
+            }}>
+              <span style={{ color: 'var(--ion-color-medium)' }}>Dernière session:</span>
+              <span style={{ fontWeight: '500' }}>{formatLastPlayed(stats.lastPlayed)}</span>
+            </div>
           </div>
-        )}
 
-        {isActiveGame ? (
-          <IonButton 
-            expand="block"
-            color="danger"
-            onClick={onEndSession}
-            style={{ 
-              '--border-radius': '12px',
-              marginBottom: '0'
-            }}
-          >
-            <IonIcon icon={stopwatch} slot="start" />
-            Arrêter la session
-          </IonButton>
-        ) : (
-          <IonButton 
-            expand="block"
-            onClick={onStartSession}
-            disabled={hasActiveSession}
-            style={{ 
-              '--border-radius': '12px',
-              marginBottom: '0',
-              opacity: hasActiveSession ? '0.5' : '1'
-            }}
-          >
-            <IonIcon icon={time} slot="start" />
-            {hasActiveSession ? 'Session en cours sur un autre jeu' : 'Démarrer une session'}
-          </IonButton>
-        )}
+          {isActiveGame && (
+            <div style={{ 
+              marginBottom: '20px',
+              padding: '12px',
+              borderRadius: '12px',
+              backgroundColor: 'var(--ion-color-warning)',
+              color: 'white',
+              textAlign: 'center',
+              fontWeight: '500',
+              fontSize: '1.1em'
+            }}>
+              Session en cours: {currentSessionTime}
+            </div>
+          )}
+
+          {isActiveGame ? (
+            <IonButton 
+              expand="block"
+              color="danger"
+              onClick={onEndSession}
+              style={{ 
+                '--border-radius': '12px',
+                marginBottom: '0'
+              }}
+            >
+              <IonIcon icon={stopwatch} slot="start" />
+              Arrêter la session
+            </IonButton>
+          ) : (
+            <IonButton 
+              expand="block"
+              onClick={onStartSession}
+              disabled={hasActiveSession}
+              style={{ 
+                '--border-radius': '12px',
+                marginBottom: '0',
+                opacity: hasActiveSession ? '0.5' : '1'
+              }}
+            >
+              <IonIcon icon={time} slot="start" />
+              {hasActiveSession ? 'Session en cours sur un autre jeu' : 'Démarrer une session'}
+            </IonButton>
+          )}
+        </div>
       </div>
-    </div>
-  </IonCard>
-);
+    </IonCard>
+  );
+};
 
 const GamingSessionsPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>(() => StorageService.loadGames());
@@ -347,6 +411,21 @@ const GamingSessionsPage: React.FC = () => {
     }
   };
 
+  const formatDuration = (minutes: number, hasPlayed: boolean = false): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    
+    if (hours === 0 && mins === 0) {
+      return hasPlayed ? "< 1m" : "0";
+    }
+    
+    if (hours === 0) {
+      return `${mins}m`;
+    }
+    
+    return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
+  };
+
   const calculateGameStats = (gameId: number): GameStats => {
     const gamesSessions = sessions.filter(s => s.gameId === gameId && s.endTime);
     const totalTime = gamesSessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
@@ -368,12 +447,6 @@ const GamingSessionsPage: React.FC = () => {
       setNewGameName('');
       setShowNewGameModal(false);
     }
-  };
-
-  const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
   };
 
   // Création d'une fonction debounced mémorisée
@@ -500,7 +573,7 @@ const GamingSessionsPage: React.FC = () => {
                 onEndSession={endSession}
                 onDelete={() => setGameToDelete(game)}
                 onToggleFavorite={() => toggleFavorite(game.id)}
-                formatDuration={formatDuration}
+                formatDuration={(minutes) => formatDuration(minutes, stats.sessionsCount > 0)}
               />
             );
           })}
