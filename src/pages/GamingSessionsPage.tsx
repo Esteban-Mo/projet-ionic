@@ -5,469 +5,30 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  IonList,
-  IonItem,
-  IonLabel,
   IonButton,
   IonIcon,
-  IonCard,
   IonFab,
   IonFabButton,
-  IonModal,
-  IonSearchbar,
-  IonThumbnail,
-  IonSpinner,
 } from '@ionic/react';
-import { add, stopwatch, time, gameController, trash, star, starOutline } from 'ionicons/icons';
+import { add } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
-import { searchGames, FreeGame } from '../services/GameService';
-import debounce from 'lodash/debounce';
+import { FreeGame } from '../services/GameService';
 import { StorageService } from '../services/StorageService';
-
-const NoImagePlaceholder: React.FC<{ name: string }> = ({ name }) => (
-  <div style={{
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%)',
-    color: 'white',
-    padding: '20px',
-    textAlign: 'center',
-    position: 'absolute',
-    top: 0,
-    left: 0
-  }}>
-    <IonIcon 
-      icon={gameController} 
-      style={{ 
-        fontSize: '3em',
-        marginBottom: '10px',
-        opacity: '0.8'
-      }} 
-    />
-    <div style={{ 
-      fontSize: '0.9em',
-      wordBreak: 'break-word',
-      opacity: '0.9',
-      fontWeight: '500'
-    }}>
-      {name}
-    </div>
-  </div>
-);
-
-const getBadgeInfo = (totalHours: number): { label: string; color: string; icon: string } => {
-  if (totalHours >= 50) return { label: 'Expert', color: 'var(--ion-color-warning)', icon: '🏆' };
-  if (totalHours >= 10) return { label: 'Passionné', color: 'var(--ion-color-success)', icon: '🎮' };
-  if (totalHours >= 2) return { label: 'Amateur', color: 'var(--ion-color-primary)', icon: '🎯' };
-  return { label: 'Débutant', color: 'var(--ion-color-medium)', icon: '🌟' };
-};
-
-const formatLastPlayed = (date?: Date): string => {
-  if (!date) return 'Pas encore joué';
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  if (days === 0) return 'Aujourd\'hui';
-  if (days === 1) return 'Hier';
-  if (days < 7) return `Il y a ${days} jours`;
-  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaine${Math.floor(days / 7) > 1 ? 's' : ''}`;
-  return `Il y a ${Math.floor(days / 30)} mois`;
-};
-
-const GameCard: React.FC<{
-  game: Game;
-  stats: GameStats;
-  isActiveGame: boolean;
-  hasActiveSession: boolean;
-  currentSessionTime: string;
-  onStartSession: () => void;
-  onEndSession: () => void;
-  onDelete: () => void;
-  onToggleFavorite: () => void;
-  onEditTime: (hours: number, minutes: number) => void;
-  formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration }) => {
-  const [showEditTimeModal, setShowEditTimeModal] = useState(false);
-  const [editHours, setEditHours] = useState(Math.floor(stats.totalTime / 60));
-  const [editMinutes, setEditMinutes] = useState(Math.round(stats.totalTime % 60));
-
-  const totalHours = stats.totalTime / 60;
-  const badge = getBadgeInfo(totalHours);
-  const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
-  
-  const handleEditTime = () => {
-    onEditTime(editHours, editMinutes);
-    setShowEditTimeModal(false);
-  };
-
-  return (
-    <IonCard style={{ 
-      margin: '16px', 
-      borderRadius: '16px',
-      overflow: 'hidden',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        background: 'var(--ion-background-color)',
-        height: '100%'
-      }}>
-        <div style={{ 
-          position: 'relative',
-          paddingTop: '56.25%', // Ratio 16:9
-          overflow: 'hidden',
-          backgroundColor: 'var(--ion-color-step-50)'
-        }}>
-          {game.coverImage && game.coverImage !== 'N/A' ? (
-            <img 
-              src={game.coverImage} 
-              alt={game.name}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 0.3s ease',
-              }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <NoImagePlaceholder name={game.name} />
-          )}
-        </div>
-        
-        <div style={{ padding: '20px' }}>
-          <div style={{ 
-            marginBottom: '16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start'
-          }}>
-            <div>
-              <h2 style={{ 
-                margin: '0 0 8px 0',
-                fontSize: '1.4em',
-                fontWeight: '600'
-              }}>
-                {game.name}
-              </h2>
-              {game.genre && (
-                <div style={{ 
-                  display: 'inline-block',
-                  padding: '4px 12px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--ion-color-primary)',
-                  color: 'white',
-                  fontSize: '0.8em',
-                  fontWeight: '500'
-                }}>
-                  {game.genre}
-                </div>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <IonButton
-                fill="clear"
-                color={game.isFavorite ? 'warning' : 'medium'}
-                onClick={onToggleFavorite}
-                style={{ 
-                  margin: '-10px -10px 0 0',
-                  '--padding-start': '8px',
-                  '--padding-end': '8px',
-                  opacity: game.isFavorite ? 1 : 0.6
-                }}
-              >
-                <IonIcon 
-                  icon={game.isFavorite ? star : starOutline} 
-                  style={{ fontSize: '1.2em' }}
-                />
-              </IonButton>
-              <IonButton
-                fill="clear"
-                color="medium"
-                onClick={onDelete}
-                style={{ 
-                  margin: '-10px -10px 0 0',
-                  '--padding-start': '8px',
-                  '--padding-end': '8px',
-                  opacity: '0.6'
-                }}
-              >
-                <IonIcon 
-                  icon={trash} 
-                  style={{ fontSize: '1.1em' }}
-                />
-              </IonButton>
-            </div>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '16px',
-            padding: '8px 12px',
-            borderRadius: '8px',
-            backgroundColor: `${badge.color}15`,
-            color: badge.color
-          }}>
-            <span style={{ fontSize: '1.2em' }}>{badge.icon}</span>
-            <span style={{ fontWeight: '500' }}>{badge.label}</span>
-          </div>
-
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ 
-                fontSize: '1.2em', 
-                fontWeight: '600',
-                color: 'var(--ion-color-primary)'
-              }}>
-                {stats.sessionsCount}
-              </div>
-              <div style={{ 
-                fontSize: '0.8em',
-                color: 'var(--ion-color-medium)',
-                marginTop: '4px'
-              }}>
-                Sessions
-              </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div 
-                onClick={() => setShowEditTimeModal(true)}
-                style={{ 
-                  fontSize: '1.2em', 
-                  fontWeight: '600',
-                  color: 'var(--ion-color-secondary)',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  borderRadius: '4px',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--ion-color-light)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                {formatDuration(stats.totalTime)}
-              </div>
-              <div style={{ 
-                fontSize: '0.8em',
-                color: 'var(--ion-color-medium)',
-                marginTop: '4px'
-              }}>
-                Temps total
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            marginBottom: '20px',
-            padding: '12px',
-            borderRadius: '8px',
-            backgroundColor: 'var(--ion-color-light)',
-            fontSize: '0.9em'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              marginBottom: '8px'
-            }}>
-              <span style={{ color: 'var(--ion-color-medium)' }}>Moyenne par session:</span>
-              <span style={{ fontWeight: '500' }}>{formatDuration(averageSessionTime)}</span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between'
-            }}>
-              <span style={{ color: 'var(--ion-color-medium)' }}>Dernière session:</span>
-              <span style={{ fontWeight: '500' }}>{formatLastPlayed(stats.lastPlayed)}</span>
-            </div>
-          </div>
-
-          {isActiveGame && (
-            <div style={{ 
-              marginBottom: '20px',
-              padding: '12px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--ion-color-warning)',
-              color: 'white',
-              textAlign: 'center',
-              fontWeight: '500',
-              fontSize: '1.1em'
-            }}>
-              Session en cours: {currentSessionTime}
-            </div>
-          )}
-
-          {isActiveGame ? (
-            <IonButton 
-              expand="block"
-              color="danger"
-              onClick={onEndSession}
-              style={{ 
-                '--border-radius': '12px',
-                marginBottom: '0'
-              }}
-            >
-              <IonIcon icon={stopwatch} slot="start" />
-              Arrêter la session
-            </IonButton>
-          ) : (
-            <IonButton 
-              expand="block"
-              onClick={onStartSession}
-              disabled={hasActiveSession}
-              style={{ 
-                '--border-radius': '12px',
-                marginBottom: '0',
-                opacity: hasActiveSession ? '0.5' : '1'
-              }}
-            >
-              <IonIcon icon={time} slot="start" />
-              {hasActiveSession ? 'Session en cours sur un autre jeu' : 'Démarrer une session'}
-            </IonButton>
-          )}
-        </div>
-      </div>
-
-      <IonModal 
-        isOpen={showEditTimeModal} 
-        onDidDismiss={() => setShowEditTimeModal(false)}
-        className="auto-height"
-        style={{
-          '--width': '90%',
-          '--height': 'auto',
-          '--max-width': '300px',
-          '--border-radius': '16px',
-          'display': 'flex',
-          'alignItems': 'center',
-          '--background': 'var(--ion-background-color)'
-        }}
-      >
-        <div style={{ 
-          padding: '20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          width: '100%',
-          backgroundColor: 'var(--ion-background-color)'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <h3 style={{ 
-              margin: '0 0 10px 0',
-              fontSize: '1.2em',
-              fontWeight: '600'
-            }}>
-              Éditer le temps de jeu
-            </h3>
-            <div style={{
-              display: 'flex',
-              gap: '10px',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: '20px'
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <input
-                  type="number"
-                  min="0"
-                  value={editHours}
-                  onChange={(e) => setEditHours(Math.max(0, parseInt(e.target.value) || 0))}
-                  style={{
-                    width: '80px',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--ion-color-medium)',
-                    textAlign: 'center',
-                    fontSize: '1.1em'
-                  }}
-                />
-                <span style={{ fontSize: '0.8em', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
-                  Heures
-                </span>
-              </div>
-              <div style={{ fontSize: '1.2em', fontWeight: '600', margin: '0 10px' }}>:</div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={editMinutes}
-                  onChange={(e) => setEditMinutes(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
-                  style={{
-                    width: '80px',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--ion-color-medium)',
-                    textAlign: 'center',
-                    fontSize: '1.1em'
-                  }}
-                />
-                <span style={{ fontSize: '0.8em', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
-                  Minutes
-                </span>
-              </div>
-            </div>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            gap: '10px'
-          }}>
-            <IonButton
-              expand="block"
-              fill="outline"
-              color="medium"
-              onClick={() => setShowEditTimeModal(false)}
-              style={{ margin: 0 }}
-            >
-              Annuler
-            </IonButton>
-            <IonButton
-              expand="block"
-              onClick={handleEditTime}
-              style={{ margin: 0 }}
-            >
-              Enregistrer
-            </IonButton>
-          </div>
-        </div>
-      </IonModal>
-    </IonCard>
-  );
-};
+import { GameCard } from '../components/GameCard/GameCard';
+import { AddGameModal } from '../components/AddGameModal/AddGameModal';
+import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal/DeleteConfirmationModal';
+import { styles } from './GamingSessionsPage.styles';
 
 const GamingSessionsPage: React.FC = () => {
+  // États
   const [games, setGames] = useState<Game[]>(() => StorageService.loadGames());
   const [sessions, setSessions] = useState<GameSession[]>(() => StorageService.loadSessions());
   const [activeSession, setActiveSession] = useState<GameSession | null>(() => StorageService.loadActiveSession());
   const [showNewGameModal, setShowNewGameModal] = useState(false);
-  const [newGameName, setNewGameName] = useState('');
   const [currentSessionTime, setCurrentSessionTime] = useState<string>('00:00:00');
-  const [searchResults, setSearchResults] = useState<FreeGame[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [gameToDelete, setGameToDelete] = useState<Game | null>(null);
 
+  // Gestion du temps de session active
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -496,6 +57,7 @@ const GamingSessionsPage: React.FC = () => {
     };
   }, [activeSession]);
 
+  // Persistance des données
   useEffect(() => {
     StorageService.saveGames(games);
   }, [games]);
@@ -508,6 +70,7 @@ const GamingSessionsPage: React.FC = () => {
     StorageService.saveActiveSession(activeSession);
   }, [activeSession]);
 
+  // Fonctions de gestion des sessions
   const startSession = (gameId: number) => {
     const newSession: GameSession = {
       id: sessions.length + 1,
@@ -537,6 +100,7 @@ const GamingSessionsPage: React.FC = () => {
     }
   };
 
+  // Formatage du temps
   const formatDuration = (minutes: number, hasPlayed: boolean = false): string => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
@@ -552,6 +116,7 @@ const GamingSessionsPage: React.FC = () => {
     return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
   };
 
+  // Calcul des statistiques
   const calculateGameStats = (gameId: number): GameStats => {
     const gamesSessions = sessions.filter(s => s.gameId === gameId && s.endTime);
     const totalTime = gamesSessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
@@ -563,56 +128,8 @@ const GamingSessionsPage: React.FC = () => {
     };
   };
 
-  const addNewGame = () => {
-    if (newGameName.trim()) {
-      const newGame: Game = {
-        id: games.length + 1,
-        name: newGameName.trim(),
-      };
-      setGames([...games, newGame]);
-      setNewGameName('');
-      setShowNewGameModal(false);
-    }
-  };
-
-  // Création d'une fonction debounced mémorisée
-  const debouncedSearch = React.useCallback(
-    debounce(async (query: string) => {
-      if (query.trim()) {
-        setIsSearching(true);
-        setSearchError(null);
-        try {
-          const results = await searchGames(query);
-          setSearchResults(results);
-        } catch (error) {
-          setSearchError("Erreur lors de la recherche. Veuillez réessayer.");
-          console.error(error);
-        } finally {
-          setIsSearching(false);
-        }
-      } else {
-        setSearchResults([]);
-        setSearchError(null);
-      }
-    }, 500), // Augmenté à 500ms pour plus de stabilité
-    []
-  );
-
-  // Effet pour gérer la recherche
-  useEffect(() => {
-    debouncedSearch(searchTerm);
-    // Nettoyage de la recherche en cours si le composant est démonté
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [searchTerm, debouncedSearch]);
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setNewGameName(value);
-  };
-
-  const selectGame = (freeGame: FreeGame) => {
+  // Gestion des jeux
+  const addGame = (freeGame: FreeGame) => {
     const newGame: Game = {
       id: games.length + 1,
       name: freeGame.title,
@@ -622,24 +139,27 @@ const GamingSessionsPage: React.FC = () => {
       platform: freeGame.platform,
     };
     setGames([...games, newGame]);
-    setNewGameName('');
-    setSearchResults([]);
     setShowNewGameModal(false);
   };
 
-  // Fonction pour supprimer un jeu et ses sessions
+  const addManualGame = (name: string) => {
+    const newGame: Game = {
+      id: games.length + 1,
+      name: name.trim(),
+    };
+    setGames([...games, newGame]);
+    setShowNewGameModal(false);
+  };
+
   const deleteGame = (game: Game) => {
-    // Supprimer toutes les sessions associées au jeu
     const updatedSessions = sessions.filter(session => session.gameId !== game.id);
     setSessions(updatedSessions);
 
-    // Si une session active existe pour ce jeu, l'arrêter
     if (activeSession?.gameId === game.id) {
       setActiveSession(null);
       setCurrentSessionTime('00:00:00');
     }
 
-    // Supprimer le jeu
     const updatedGames = games.filter(g => g.id !== game.id);
     setGames(updatedGames);
     setGameToDelete(null);
@@ -652,20 +172,11 @@ const GamingSessionsPage: React.FC = () => {
     setGames(updatedGames);
   };
 
-  // Trier les jeux : favoris d'abord, puis par nom
-  const sortedGames = [...games].sort((a, b) => {
-    if (a.isFavorite === b.isFavorite) {
-      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-    }
-    return a.isFavorite ? -1 : 1;
-  });
-
   const editGameTime = (gameId: number, hours: number, minutes: number) => {
     const totalMinutes = hours * 60 + minutes;
     const gamesSessions = sessions.filter(s => s.gameId === gameId && s.endTime);
     
     if (gamesSessions.length > 0) {
-      // Mettre à jour la dernière session pour refléter le nouveau temps total
       const updatedSessions = [...sessions];
       const lastSession = gamesSessions[gamesSessions.length - 1];
       const newDuration = totalMinutes - gamesSessions.slice(0, -1).reduce((acc, curr) => acc + (curr.duration || 0), 0);
@@ -679,7 +190,6 @@ const GamingSessionsPage: React.FC = () => {
         setSessions(updatedSessions);
       }
     } else if (totalMinutes > 0) {
-      // Créer une nouvelle session si aucune n'existe
       const newSession: GameSession = {
         id: sessions.length + 1,
         gameId,
@@ -691,11 +201,19 @@ const GamingSessionsPage: React.FC = () => {
     }
   };
 
+  // Tri des jeux
+  const sortedGames = [...games].sort((a, b) => {
+    if (a.isFavorite === b.isFavorite) {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+    return a.isFavorite ? -1 : 1;
+  });
+
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar style={{ '--padding-top': '8px', '--padding-bottom': '8px' }}>
-          <IonTitle style={{ fontSize: '1.4em', fontWeight: '600' }}>
+        <IonToolbar style={styles.toolbar}>
+          <IonTitle style={styles.title}>
             Mes Sessions de Jeu
           </IonTitle>
           <IonButton 
@@ -703,17 +221,13 @@ const GamingSessionsPage: React.FC = () => {
             fill="clear"
             onClick={() => setShowNewGameModal(true)}
           >
-            <IonIcon icon={add} slot="icon-only" style={{ fontSize: '1.4em' }} />
+            <IonIcon icon={add} slot="icon-only" style={styles.addButton} />
           </IonButton>
         </IonToolbar>
       </IonHeader>
+
       <IonContent>
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '8px',
-          padding: '8px'
-        }}>
+        <div style={styles.gamesGrid}>
           {sortedGames.map(game => {
             const stats = calculateGameStats(game.id);
             const isActiveGame = activeSession?.gameId === game.id;
@@ -737,167 +251,22 @@ const GamingSessionsPage: React.FC = () => {
           })}
         </div>
 
-        <IonModal isOpen={showNewGameModal} onDidDismiss={() => {
-          setShowNewGameModal(false);
-          setSearchTerm('');
-          setSearchResults([]);
-          setNewGameName('');
-          setSearchError(null);
-        }}>
-          <IonHeader>
-            <IonToolbar>
-              <IonTitle>Ajouter un jeu gratuit</IonTitle>
-              <IonButton 
-                slot="end" 
-                fill="clear"
-                onClick={() => {
-                  setShowNewGameModal(false);
-                  setSearchTerm('');
-                  setSearchResults([]);
-                  setNewGameName('');
-                  setSearchError(null);
-                }}
-              >
-                Fermer
-              </IonButton>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            <IonSearchbar
-              value={searchTerm}
-              onIonInput={e => handleSearch(e.detail.value || '')}
-              placeholder="Rechercher un jeu gratuit..."
-              debounce={0} // On gère le debounce nous-mêmes
-              animated={true}
-              style={{ '--background': 'var(--ion-background-color)' }}
-            />
+        <AddGameModal
+          isOpen={showNewGameModal}
+          onClose={() => setShowNewGameModal(false)}
+          onAddGame={addGame}
+          onAddManualGame={addManualGame}
+        />
 
-            {isSearching && (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-                <IonSpinner />
-              </div>
-            )}
+        <DeleteConfirmationModal
+          isOpen={!!gameToDelete}
+          onClose={() => setGameToDelete(null)}
+          onConfirm={() => gameToDelete && deleteGame(gameToDelete)}
+          gameName={gameToDelete?.name || ''}
+        />
 
-            {searchError && (
-              <div style={{ 
-                color: 'var(--ion-color-danger)', 
-                padding: '10px', 
-                textAlign: 'center' 
-              }}>
-                {searchError}
-              </div>
-            )}
-
-            <IonList>
-              {searchResults.map(game => (
-                <IonItem key={game.id} button onClick={() => selectGame(game)}>
-                  <IonThumbnail slot="start" style={{ width: '80px', height: '80px' }}>
-                    {game.thumbnail && game.thumbnail !== 'N/A' ? (
-                      <img 
-                        src={game.thumbnail} 
-                        alt={game.title}
-                        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement?.querySelector('.placeholder')?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : (
-                      <NoImagePlaceholder name={game.title} />
-                    )}
-                  </IonThumbnail>
-                  <IonLabel>
-                    <h2>{game.title}</h2>
-                    <p>{game.genre} • {game.platform}</p>
-                    <p className="ion-text-wrap" style={{ fontSize: '0.8em', color: 'var(--ion-color-medium)' }}>
-                      {game.short_description}
-                    </p>
-                    <p style={{ fontSize: '0.8em' }}>
-                      {game.publisher} • {new Date(game.release_date).getFullYear()}
-                    </p>
-                  </IonLabel>
-                </IonItem>
-              ))}
-            </IonList>
-
-            {!isSearching && searchResults.length === 0 && newGameName.trim() && !searchError && (
-              <IonButton 
-                expand="block" 
-                style={{ margin: '10px' }}
-                onClick={addNewGame}
-              >
-                Ajouter manuellement "{newGameName}"
-              </IonButton>
-            )}
-          </IonContent>
-        </IonModal>
-
-        {/* Modal de confirmation de suppression */}
-        <IonModal 
-          isOpen={!!gameToDelete} 
-          onDidDismiss={() => setGameToDelete(null)}
-          breakpoints={[0, 0.4]}
-          initialBreakpoint={0.4}
-          style={{
-            '--width': '90%',
-            '--height': 'auto',
-            '--max-width': '300px',
-            '--border-radius': '16px'
-          }}
-        >
-          <div style={{ 
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <h3 style={{ 
-                margin: '0 0 10px 0',
-                fontSize: '1.2em',
-                fontWeight: '600'
-              }}>
-                Supprimer {gameToDelete?.name} ?
-              </h3>
-              <p style={{ 
-                color: 'var(--ion-color-medium)',
-                fontSize: '0.9em',
-                margin: 0
-              }}>
-                Les sessions associées seront également supprimées.
-              </p>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              gap: '10px'
-            }}>
-              <IonButton
-                expand="block"
-                fill="outline"
-                color="medium"
-                onClick={() => setGameToDelete(null)}
-                style={{ margin: 0 }}
-              >
-                Annuler
-              </IonButton>
-              <IonButton
-                expand="block"
-                color="danger"
-                onClick={() => gameToDelete && deleteGame(gameToDelete)}
-                style={{ margin: 0 }}
-              >
-                Supprimer
-              </IonButton>
-            </div>
-          </div>
-        </IonModal>
-
-        <IonFab vertical="bottom" horizontal="end" slot="fixed" style={{ margin: '16px' }}>
-          <IonFabButton 
-            onClick={() => setShowNewGameModal(true)}
-            style={{ '--border-radius': '16px' }}
-          >
+        <IonFab vertical="bottom" horizontal="end" slot="fixed" style={styles.fab}>
+          <IonFabButton onClick={() => setShowNewGameModal(true)}>
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
