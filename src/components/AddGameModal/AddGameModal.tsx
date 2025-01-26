@@ -13,31 +13,41 @@ import {
   IonThumbnail,
   IonSpinner,
   IonIcon,
-  IonText
+  IonText,
+  IonNote
 } from '@ionic/react';
 import { searchGames, FreeGame } from '../../services/GameService';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './AddGameModal.styles';
 import debounce from 'lodash/debounce';
-import { alertCircleOutline, refreshOutline } from 'ionicons/icons';
+import { alertCircleOutline, refreshOutline, checkmarkCircle } from 'ionicons/icons';
+import { Game } from '../../models/GameSession';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onAddGame: (game: FreeGame) => void;
   onAddManualGame: (name: string) => void;
+  existingGames: Game[];
 }
 
 export const AddGameModal: React.FC<Props> = ({
   isOpen,
   onClose,
   onAddGame,
-  onAddManualGame
+  onAddManualGame,
+  existingGames
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<FreeGame[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  const isGameExists = (game: FreeGame) => {
+    return existingGames.some(
+      existingGame => existingGame.name.toLowerCase() === game.title.toLowerCase()
+    );
+  };
 
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
@@ -130,35 +140,58 @@ export const AddGameModal: React.FC<Props> = ({
         )}
 
         <IonList>
-          {searchResults.map(game => (
-            <IonItem key={game.id} button onClick={() => onAddGame(game)}>
-              <IonThumbnail slot="start" style={styles.thumbnail}>
-                {game.thumbnail && game.thumbnail !== 'N/A' ? (
-                  <img 
-                    src={game.thumbnail} 
-                    alt={game.title}
-                    style={styles.image}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <NoImagePlaceholder name={game.title} />
-                )}
-              </IonThumbnail>
-              <IonLabel>
-                <h2 style={styles.gameTitle}>{game.title}</h2>
-                <p style={styles.gameInfo}>{game.genre} • {game.platform}</p>
-                <p className="ion-text-wrap" style={styles.description}>
-                  {game.short_description}
-                </p>
-                <p style={styles.publisher}>
-                  {game.publisher} • {new Date(game.release_date).getFullYear()}
-                </p>
-              </IonLabel>
-            </IonItem>
-          ))}
+          {searchResults.map(game => {
+            const exists = isGameExists(game);
+            return (
+              <IonItem 
+                key={game.id} 
+                button={!exists}
+                onClick={() => !exists && onAddGame(game)}
+                style={exists ? styles.existingGame : undefined}
+                disabled={exists}
+              >
+                <IonThumbnail slot="start" style={styles.thumbnail}>
+                  {game.thumbnail && game.thumbnail !== 'N/A' ? (
+                    <img 
+                      src={game.thumbnail} 
+                      alt={game.title}
+                      style={styles.image}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <NoImagePlaceholder name={game.title} />
+                  )}
+                </IonThumbnail>
+                <IonLabel>
+                  <h2 style={styles.gameTitle}>
+                    {game.title}
+                    {exists && (
+                      <IonIcon 
+                        icon={checkmarkCircle} 
+                        color="success"
+                        style={{ marginLeft: '8px', verticalAlign: 'middle' }}
+                      />
+                    )}
+                  </h2>
+                  <p style={styles.gameInfo}>{game.genre} • {game.platform}</p>
+                  <p className="ion-text-wrap" style={styles.description}>
+                    {game.short_description}
+                  </p>
+                  <p style={styles.publisher}>
+                    {game.publisher} • {new Date(game.release_date).getFullYear()}
+                  </p>
+                  {exists && (
+                    <IonNote color="medium" style={styles.existingGameNote}>
+                      Ce jeu est déjà dans votre bibliothèque
+                    </IonNote>
+                  )}
+                </IonLabel>
+              </IonItem>
+            );
+          })}
         </IonList>
 
         {!isSearching && searchResults.length === 0 && searchTerm.trim() && !searchError && (

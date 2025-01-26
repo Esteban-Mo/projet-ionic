@@ -256,6 +256,7 @@ const GamingSessionsPage: React.FC = () => {
           onClose={() => setShowNewGameModal(false)}
           onAddGame={addGame}
           onAddManualGame={addManualGame}
+          existingGames={games}
         />
 
         <DeleteConfirmationModal

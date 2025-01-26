@@ -40,5 +40,15 @@ export const styles = {
   },
   addButton: {
     margin: '10px'
+  },
+  existingGame: {
+    opacity: 0.7,
+    backgroundColor: 'var(--ion-color-light)',
+    cursor: 'default'
+  },
+  existingGameNote: {
+    display: 'block',
+    marginTop: '8px',
+    fontStyle: 'italic'
   }
 } as const; 
