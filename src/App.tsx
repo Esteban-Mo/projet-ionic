@@ -11,8 +11,9 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { gameController, stopwatch, statsChart } from 'ionicons/icons';
+import { gameController, stopwatch, statsChart, barChartOutline } from 'ionicons/icons';
 import GamingSessionsPage from './pages/GamingSessionsPage';
+import StatisticsPage from './pages/StatisticsPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -57,6 +58,9 @@ const App: React.FC = () => (
           <Route exact path="/">
             <Redirect to="/games" />
           </Route>
+          <Route exact path="/tab2">
+            <StatisticsPage />
+          </Route>
         </IonRouterOutlet>
         <IonTabBar slot="bottom">
           <IonTabButton tab="games" href="/games">
@@ -67,8 +71,8 @@ const App: React.FC = () => (
             <IonIcon icon={stopwatch} />
             <IonLabel>Sessions</IonLabel>
           </IonTabButton>
-          <IonTabButton tab="stats" href="/stats">
-            <IonIcon icon={statsChart} />
+          <IonTabButton tab="tab2" href="/tab2">
+            <IonIcon aria-hidden="true" icon={barChartOutline} />
             <IonLabel>Statistiques</IonLabel>
           </IonTabButton>
         </IonTabBar>
