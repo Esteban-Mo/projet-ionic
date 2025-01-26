@@ -1,7 +1,18 @@
+import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import {
+  IonApp,
+  IonIcon,
+  IonLabel,
+  IonRouterOutlet,
+  IonTabBar,
+  IonTabButton,
+  IonTabs,
+  setupIonicReact
+} from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Home from './pages/Home';
+import { gameController, stopwatch, statsChart } from 'ionicons/icons';
+import GamingSessionsPage from './pages/GamingSessionsPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -38,14 +49,30 @@ setupIonicReact();
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-      </IonRouterOutlet>
+      <IonTabs>
+        <IonRouterOutlet>
+          <Route exact path="/games">
+            <GamingSessionsPage />
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/games" />
+          </Route>
+        </IonRouterOutlet>
+        <IonTabBar slot="bottom">
+          <IonTabButton tab="games" href="/games">
+            <IonIcon icon={gameController} />
+            <IonLabel>Mes Jeux</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="sessions" href="/sessions">
+            <IonIcon icon={stopwatch} />
+            <IonLabel>Sessions</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="stats" href="/stats">
+            <IonIcon icon={statsChart} />
+            <IonLabel>Statistiques</IonLabel>
+          </IonTabButton>
+        </IonTabBar>
+      </IonTabs>
     </IonReactRouter>
   </IonApp>
 );
