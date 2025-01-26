@@ -63,13 +63,14 @@ const GameCard: React.FC<{
   game: Game;
   stats: GameStats;
   isActiveGame: boolean;
+  hasActiveSession: boolean;
   currentSessionTime: string;
   onStartSession: () => void;
   onEndSession: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
   formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => (
+}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => (
   <IonCard style={{ 
     margin: '16px', 
     borderRadius: '16px',
@@ -248,13 +249,15 @@ const GameCard: React.FC<{
           <IonButton 
             expand="block"
             onClick={onStartSession}
+            disabled={hasActiveSession}
             style={{ 
               '--border-radius': '12px',
-              marginBottom: '0'
+              marginBottom: '0',
+              opacity: hasActiveSession ? '0.5' : '1'
             }}
           >
             <IonIcon icon={time} slot="start" />
-            Démarrer une session
+            {hasActiveSession ? 'Session en cours sur un autre jeu' : 'Démarrer une session'}
           </IonButton>
         )}
       </div>
@@ -491,6 +494,7 @@ const GamingSessionsPage: React.FC = () => {
                 game={game}
                 stats={stats}
                 isActiveGame={isActiveGame}
+                hasActiveSession={!!activeSession}
                 currentSessionTime={currentSessionTime}
                 onStartSession={() => startSession(game.id)}
                 onEndSession={endSession}
