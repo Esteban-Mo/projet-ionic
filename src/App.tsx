@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -45,40 +45,49 @@ import '@ionic/react/css/palettes/dark.system.css';
 /* Theme variables */
 import './theme/variables.css';
 
-setupIonicReact();
+setupIonicReact({
+  mode: 'md'
+});
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/games">
-            <GamingSessionsPage />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/games" />
-          </Route>
-          <Route exact path="/tab2">
-            <StatisticsPage />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="games" href="/games">
-            <IonIcon icon={gameController} />
-            <IonLabel>Mes Jeux</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="sessions" href="/sessions">
-            <IonIcon icon={stopwatch} />
-            <IonLabel>Sessions</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/tab2">
-            <IonIcon aria-hidden="true" icon={barChartOutline} />
-            <IonLabel>Statistiques</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  // Appliquer le thème sombre par défaut
+  useEffect(() => {
+    document.body.classList.add('dark');
+  }, []);
+
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <IonTabs>
+          <IonRouterOutlet>
+            <Route exact path="/games">
+              <GamingSessionsPage />
+            </Route>
+            <Route exact path="/">
+              <Redirect to="/games" />
+            </Route>
+            <Route exact path="/tab2">
+              <StatisticsPage />
+            </Route>
+          </IonRouterOutlet>
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="games" href="/games">
+              <IonIcon icon={gameController} />
+              <IonLabel>Mes Jeux</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="sessions" href="/sessions">
+              <IonIcon icon={stopwatch} />
+              <IonLabel>Sessions</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="tab2" href="/tab2">
+              <IonIcon aria-hidden="true" icon={barChartOutline} />
+              <IonLabel>Statistiques</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        </IonTabs>
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 export default App;
