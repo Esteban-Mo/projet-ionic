@@ -22,6 +22,7 @@ import { add, stopwatch, time, gameController } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
 import { searchGames, FreeGame } from '../services/GameService';
 import debounce from 'lodash/debounce';
+import { StorageService } from '../services/StorageService';
 
 const NoImagePlaceholder: React.FC<{ name: string }> = ({ name }) => (
   <div style={{
@@ -65,7 +66,8 @@ const GameCard: React.FC<{
   currentSessionTime: string;
   onStartSession: () => void;
   onEndSession: () => void;
-}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession }) => (
+  formatDuration: (minutes: number) => string;
+}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, formatDuration }) => (
   <IonCard style={{ 
     margin: '16px', 
     borderRadius: '16px',
@@ -133,7 +135,7 @@ const GameCard: React.FC<{
 
         <div style={{ 
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '12px',
           marginBottom: '20px'
         }}>
@@ -142,22 +144,6 @@ const GameCard: React.FC<{
               fontSize: '1.2em', 
               fontWeight: '600',
               color: 'var(--ion-color-primary)'
-            }}>
-              {stats.totalTime}
-            </div>
-            <div style={{ 
-              fontSize: '0.8em',
-              color: 'var(--ion-color-medium)',
-              marginTop: '4px'
-            }}>
-              Total
-            </div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              fontSize: '1.2em', 
-              fontWeight: '600',
-              color: 'var(--ion-color-secondary)'
             }}>
               {stats.sessionsCount}
             </div>
@@ -173,16 +159,16 @@ const GameCard: React.FC<{
             <div style={{ 
               fontSize: '1.2em', 
               fontWeight: '600',
-              color: 'var(--ion-color-tertiary)'
+              color: 'var(--ion-color-secondary)'
             }}>
-              {stats.averageSessionTime}
+              {formatDuration(stats.totalTime)}
             </div>
             <div style={{ 
               fontSize: '0.8em',
               color: 'var(--ion-color-medium)',
               marginTop: '4px'
             }}>
-              Moyenne
+              Temps de jeu
             </div>
           </div>
         </div>
@@ -234,19 +220,16 @@ const GameCard: React.FC<{
 );
 
 const GamingSessionsPage: React.FC = () => {
-  const [games, setGames] = useState<Game[]>([
-    { id: 1, name: 'The Witcher 3', coverImage: 'https://via.placeholder.com/150' },
-    { id: 2, name: 'Cyberpunk 2077', coverImage: 'https://via.placeholder.com/150' },
-  ]);
-
-  const [sessions, setSessions] = useState<GameSession[]>([]);
-  const [activeSession, setActiveSession] = useState<GameSession | null>(null);
+  const [games, setGames] = useState<Game[]>(() => StorageService.loadGames());
+  const [sessions, setSessions] = useState<GameSession[]>(() => StorageService.loadSessions());
+  const [activeSession, setActiveSession] = useState<GameSession | null>(() => StorageService.loadActiveSession());
   const [showNewGameModal, setShowNewGameModal] = useState(false);
   const [newGameName, setNewGameName] = useState('');
   const [currentSessionTime, setCurrentSessionTime] = useState<string>('00:00:00');
   const [searchResults, setSearchResults] = useState<FreeGame[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -274,6 +257,18 @@ const GamingSessionsPage: React.FC = () => {
         clearInterval(interval);
       }
     };
+  }, [activeSession]);
+
+  useEffect(() => {
+    StorageService.saveGames(games);
+  }, [games]);
+
+  useEffect(() => {
+    StorageService.saveSessions(sessions);
+  }, [sessions]);
+
+  useEffect(() => {
+    StorageService.saveActiveSession(activeSession);
   }, [activeSession]);
 
   const startSession = (gameId: number) => {
@@ -334,29 +329,41 @@ const GamingSessionsPage: React.FC = () => {
     return `${hours}h ${mins}m`;
   };
 
-  // Modification de la fonction debouncedSearch
-  const debouncedSearch = debounce(async (query: string) => {
-    if (query.trim()) {
-      setIsSearching(true);
-      setSearchError(null);
-      try {
-        const results = await searchGames(query);
-        setSearchResults(results);
-      } catch (error) {
-        setSearchError("Erreur lors de la recherche. Veuillez réessayer.");
-        console.error(error);
-      } finally {
-        setIsSearching(false);
+  // Création d'une fonction debounced mémorisée
+  const debouncedSearch = React.useCallback(
+    debounce(async (query: string) => {
+      if (query.trim()) {
+        setIsSearching(true);
+        setSearchError(null);
+        try {
+          const results = await searchGames(query);
+          setSearchResults(results);
+        } catch (error) {
+          setSearchError("Erreur lors de la recherche. Veuillez réessayer.");
+          console.error(error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setSearchError(null);
       }
-    } else {
-      setSearchResults([]);
-      setSearchError(null);
-    }
-  }, 300);
+    }, 500), // Augmenté à 500ms pour plus de stabilité
+    []
+  );
+
+  // Effet pour gérer la recherche
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+    // Nettoyage de la recherche en cours si le composant est démonté
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [searchTerm, debouncedSearch]);
 
   const handleSearch = (value: string) => {
+    setSearchTerm(value);
     setNewGameName(value);
-    debouncedSearch(value);
   };
 
   const selectGame = (freeGame: FreeGame) => {
@@ -410,19 +417,32 @@ const GamingSessionsPage: React.FC = () => {
                 currentSessionTime={currentSessionTime}
                 onStartSession={() => startSession(game.id)}
                 onEndSession={endSession}
+                formatDuration={formatDuration}
               />
             );
           })}
         </div>
 
-        <IonModal isOpen={showNewGameModal} onDidDismiss={() => setShowNewGameModal(false)}>
+        <IonModal isOpen={showNewGameModal} onDidDismiss={() => {
+          setShowNewGameModal(false);
+          setSearchTerm('');
+          setSearchResults([]);
+          setNewGameName('');
+          setSearchError(null);
+        }}>
           <IonHeader>
             <IonToolbar>
               <IonTitle>Ajouter un jeu gratuit</IonTitle>
               <IonButton 
                 slot="end" 
                 fill="clear"
-                onClick={() => setShowNewGameModal(false)}
+                onClick={() => {
+                  setShowNewGameModal(false);
+                  setSearchTerm('');
+                  setSearchResults([]);
+                  setNewGameName('');
+                  setSearchError(null);
+                }}
               >
                 Fermer
               </IonButton>
@@ -430,10 +450,12 @@ const GamingSessionsPage: React.FC = () => {
           </IonHeader>
           <IonContent>
             <IonSearchbar
-              value={newGameName}
+              value={searchTerm}
               onIonInput={e => handleSearch(e.detail.value || '')}
               placeholder="Rechercher un jeu gratuit..."
-              debounce={300}
+              debounce={0} // On gère le debounce nous-mêmes
+              animated={true}
+              style={{ '--background': 'var(--ion-background-color)' }}
             />
 
             {isSearching && (
