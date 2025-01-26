@@ -11,12 +11,15 @@ import {
   IonItem,
   IonLabel,
   IonThumbnail,
-  IonSpinner
+  IonSpinner,
+  IonIcon,
+  IonText
 } from '@ionic/react';
 import { searchGames, FreeGame } from '../../services/GameService';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './AddGameModal.styles';
 import debounce from 'lodash/debounce';
+import { alertCircleOutline, refreshOutline } from 'ionicons/icons';
 
 interface Props {
   isOpen: boolean;
@@ -45,8 +48,12 @@ export const AddGameModal: React.FC<Props> = ({
           const results = await searchGames(query);
           setSearchResults(results);
         } catch (error) {
-          setSearchError("Erreur lors de la recherche. Veuillez réessayer.");
-          console.error(error);
+          setSearchError(
+            error instanceof Error 
+              ? error.message 
+              : "Une erreur est survenue lors de la recherche"
+          );
+          setSearchResults([]);
         } finally {
           setIsSearching(false);
         }
@@ -70,6 +77,12 @@ export const AddGameModal: React.FC<Props> = ({
     setSearchResults([]);
     setSearchError(null);
     onClose();
+  };
+
+  const handleRetry = () => {
+    if (searchTerm) {
+      debouncedSearch(searchTerm);
+    }
   };
 
   return (
@@ -104,7 +117,15 @@ export const AddGameModal: React.FC<Props> = ({
 
         {searchError && (
           <div style={styles.error}>
-            {searchError}
+            <IonIcon icon={alertCircleOutline} style={{ marginRight: '8px' }} />
+            <IonText color="danger">{searchError}</IonText>
+            <IonButton 
+              fill="clear"
+              onClick={handleRetry}
+              style={{ marginLeft: '8px' }}
+            >
+              <IonIcon icon={refreshOutline} slot="icon-only" />
+            </IonButton>
           </div>
         )}
 
