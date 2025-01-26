@@ -89,12 +89,22 @@ const GameCard: React.FC<{
   onEndSession: () => void;
   onDelete: () => void;
   onToggleFavorite: () => void;
+  onEditTime: (hours: number, minutes: number) => void;
   formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => {
+}> = ({ game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration }) => {
+  const [showEditTimeModal, setShowEditTimeModal] = useState(false);
+  const [editHours, setEditHours] = useState(Math.floor(stats.totalTime / 60));
+  const [editMinutes, setEditMinutes] = useState(Math.round(stats.totalTime % 60));
+
   const totalHours = stats.totalTime / 60;
   const badge = getBadgeInfo(totalHours);
   const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
   
+  const handleEditTime = () => {
+    onEditTime(editHours, editMinutes);
+    setShowEditTimeModal(false);
+  };
+
   return (
     <IonCard style={{ 
       margin: '16px', 
@@ -239,11 +249,24 @@ const GameCard: React.FC<{
               </div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ 
-                fontSize: '1.2em', 
-                fontWeight: '600',
-                color: 'var(--ion-color-secondary)'
-              }}>
+              <div 
+                onClick={() => setShowEditTimeModal(true)}
+                style={{ 
+                  fontSize: '1.2em', 
+                  fontWeight: '600',
+                  color: 'var(--ion-color-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--ion-color-light)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
                 {formatDuration(stats.totalTime)}
               </div>
               <div style={{ 
@@ -325,6 +348,109 @@ const GameCard: React.FC<{
           )}
         </div>
       </div>
+
+      <IonModal 
+        isOpen={showEditTimeModal} 
+        onDidDismiss={() => setShowEditTimeModal(false)}
+        className="auto-height"
+        style={{
+          '--width': '90%',
+          '--height': 'auto',
+          '--max-width': '300px',
+          '--border-radius': '16px',
+          'display': 'flex',
+          'alignItems': 'center',
+          '--background': 'var(--ion-background-color)'
+        }}
+      >
+        <div style={{ 
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          width: '100%',
+          backgroundColor: 'var(--ion-background-color)'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h3 style={{ 
+              margin: '0 0 10px 0',
+              fontSize: '1.2em',
+              fontWeight: '600'
+            }}>
+              Éditer le temps de jeu
+            </h3>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '20px'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  min="0"
+                  value={editHours}
+                  onChange={(e) => setEditHours(Math.max(0, parseInt(e.target.value) || 0))}
+                  style={{
+                    width: '80px',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--ion-color-medium)',
+                    textAlign: 'center',
+                    fontSize: '1.1em'
+                  }}
+                />
+                <span style={{ fontSize: '0.8em', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
+                  Heures
+                </span>
+              </div>
+              <div style={{ fontSize: '1.2em', fontWeight: '600', margin: '0 10px' }}>:</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={editMinutes}
+                  onChange={(e) => setEditMinutes(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
+                  style={{
+                    width: '80px',
+                    padding: '8px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--ion-color-medium)',
+                    textAlign: 'center',
+                    fontSize: '1.1em'
+                  }}
+                />
+                <span style={{ fontSize: '0.8em', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
+                  Minutes
+                </span>
+              </div>
+            </div>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            gap: '10px'
+          }}>
+            <IonButton
+              expand="block"
+              fill="outline"
+              color="medium"
+              onClick={() => setShowEditTimeModal(false)}
+              style={{ margin: 0 }}
+            >
+              Annuler
+            </IonButton>
+            <IonButton
+              expand="block"
+              onClick={handleEditTime}
+              style={{ margin: 0 }}
+            >
+              Enregistrer
+            </IonButton>
+          </div>
+        </div>
+      </IonModal>
     </IonCard>
   );
 };
@@ -534,6 +660,37 @@ const GamingSessionsPage: React.FC = () => {
     return a.isFavorite ? -1 : 1;
   });
 
+  const editGameTime = (gameId: number, hours: number, minutes: number) => {
+    const totalMinutes = hours * 60 + minutes;
+    const gamesSessions = sessions.filter(s => s.gameId === gameId && s.endTime);
+    
+    if (gamesSessions.length > 0) {
+      // Mettre à jour la dernière session pour refléter le nouveau temps total
+      const updatedSessions = [...sessions];
+      const lastSession = gamesSessions[gamesSessions.length - 1];
+      const newDuration = totalMinutes - gamesSessions.slice(0, -1).reduce((acc, curr) => acc + (curr.duration || 0), 0);
+      
+      const sessionIndex = updatedSessions.findIndex(s => s.id === lastSession.id);
+      if (sessionIndex !== -1) {
+        updatedSessions[sessionIndex] = {
+          ...lastSession,
+          duration: Math.max(0, newDuration)
+        };
+        setSessions(updatedSessions);
+      }
+    } else if (totalMinutes > 0) {
+      // Créer une nouvelle session si aucune n'existe
+      const newSession: GameSession = {
+        id: sessions.length + 1,
+        gameId,
+        startTime: new Date(),
+        endTime: new Date(),
+        duration: totalMinutes
+      };
+      setSessions([...sessions, newSession]);
+    }
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -573,6 +730,7 @@ const GamingSessionsPage: React.FC = () => {
                 onEndSession={endSession}
                 onDelete={() => setGameToDelete(game)}
                 onToggleFavorite={() => toggleFavorite(game.id)}
+                onEditTime={(hours, minutes) => editGameTime(game.id, hours, minutes)}
                 formatDuration={(minutes) => formatDuration(minutes, stats.sessionsCount > 0)}
               />
             );
