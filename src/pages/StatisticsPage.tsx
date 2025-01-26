@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -9,6 +9,7 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
+  useIonViewWillEnter,
 } from '@ionic/react';
 import {
   BarChart,
@@ -40,8 +41,14 @@ const PERIODS = [
 ];
 
 const StatisticsPage: React.FC = () => {
-  const games = StorageService.loadGames();
-  const sessions = StorageService.loadSessions();
+  const [games, setGames] = useState<Game[]>([]);
+  const [sessions, setSessions] = useState<GameSession[]>([]);
+
+  // Se déclenche à chaque fois que la page devient visible
+  useIonViewWillEnter(() => {
+    setGames(StorageService.loadGames());
+    setSessions(StorageService.loadSessions());
+  });
 
   // Statistiques par jour de la semaine
   const playTimeByDay = useMemo(() => {
