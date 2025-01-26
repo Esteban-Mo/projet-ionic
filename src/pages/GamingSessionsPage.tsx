@@ -18,7 +18,7 @@ import {
   IonThumbnail,
   IonSpinner,
 } from '@ionic/react';
-import { add, stopwatch, time, gameController, trash } from 'ionicons/icons';
+import { add, stopwatch, time, gameController, trash, star, starOutline } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
 import { searchGames, FreeGame } from '../services/GameService';
 import debounce from 'lodash/debounce';
@@ -67,8 +67,9 @@ const GameCard: React.FC<{
   onStartSession: () => void;
   onEndSession: () => void;
   onDelete: () => void;
+  onToggleFavorite: () => void;
   formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, onDelete, formatDuration }) => (
+}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, formatDuration }) => (
   <IonCard style={{ 
     margin: '16px', 
     borderRadius: '16px',
@@ -139,22 +140,40 @@ const GameCard: React.FC<{
               </div>
             )}
           </div>
-          <IonButton
-            fill="clear"
-            color="medium"
-            onClick={onDelete}
-            style={{ 
-              margin: '-10px -10px 0 0',
-              '--padding-start': '8px',
-              '--padding-end': '8px',
-              opacity: '0.6'
-            }}
-          >
-            <IonIcon 
-              icon={trash} 
-              style={{ fontSize: '1.1em' }}
-            />
-          </IonButton>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <IonButton
+              fill="clear"
+              color={game.isFavorite ? 'warning' : 'medium'}
+              onClick={onToggleFavorite}
+              style={{ 
+                margin: '-10px -10px 0 0',
+                '--padding-start': '8px',
+                '--padding-end': '8px',
+                opacity: game.isFavorite ? 1 : 0.6
+              }}
+            >
+              <IonIcon 
+                icon={game.isFavorite ? star : starOutline} 
+                style={{ fontSize: '1.2em' }}
+              />
+            </IonButton>
+            <IonButton
+              fill="clear"
+              color="medium"
+              onClick={onDelete}
+              style={{ 
+                margin: '-10px -10px 0 0',
+                '--padding-start': '8px',
+                '--padding-end': '8px',
+                opacity: '0.6'
+              }}
+            >
+              <IonIcon 
+                icon={trash} 
+                style={{ fontSize: '1.1em' }}
+              />
+            </IonButton>
+          </div>
         </div>
 
         <div style={{ 
@@ -424,6 +443,21 @@ const GamingSessionsPage: React.FC = () => {
     setGameToDelete(null);
   };
 
+  const toggleFavorite = (gameId: number) => {
+    const updatedGames = games.map(game => 
+      game.id === gameId ? { ...game, isFavorite: !game.isFavorite } : game
+    );
+    setGames(updatedGames);
+  };
+
+  // Trier les jeux : favoris d'abord, puis par nom
+  const sortedGames = [...games].sort((a, b) => {
+    if (a.isFavorite === b.isFavorite) {
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+    return a.isFavorite ? -1 : 1;
+  });
+
   return (
     <IonPage>
       <IonHeader>
@@ -447,7 +481,7 @@ const GamingSessionsPage: React.FC = () => {
           gap: '8px',
           padding: '8px'
         }}>
-          {games.map(game => {
+          {sortedGames.map(game => {
             const stats = calculateGameStats(game.id);
             const isActiveGame = activeSession?.gameId === game.id;
             
@@ -461,6 +495,7 @@ const GamingSessionsPage: React.FC = () => {
                 onStartSession={() => startSession(game.id)}
                 onEndSession={endSession}
                 onDelete={() => setGameToDelete(game)}
+                onToggleFavorite={() => toggleFavorite(game.id)}
                 formatDuration={formatDuration}
               />
             );

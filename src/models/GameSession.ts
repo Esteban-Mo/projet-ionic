@@ -7,6 +7,7 @@ export interface Game {
   platform?: string;
   publisher?: string;
   releaseDate?: string;
+  isFavorite?: boolean;
 }
 
 export interface GameSession {
