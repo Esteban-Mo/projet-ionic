@@ -3,7 +3,9 @@ export const styles = {
     margin: '16px',
     borderRadius: '16px',
     overflow: 'hidden',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid var(--ion-border-color)',
+    background: 'var(--ion-background-color)'
   },
   container: {
     display: 'flex',
@@ -15,7 +17,7 @@ export const styles = {
     position: 'relative',
     paddingTop: '56.25%', // Ratio 16:9
     overflow: 'hidden',
-    backgroundColor: 'var(--ion-color-step-50)'
+    backgroundColor: 'var(--ion-color-light)'
   },
   image: {
     position: 'absolute',
@@ -38,7 +40,8 @@ export const styles = {
   title: {
     margin: '0 0 8px 0',
     fontSize: '1.4em',
-    fontWeight: '600'
+    fontWeight: '600',
+    color: 'var(--ion-text-color)'
   },
   genre: {
     display: 'inline-block',
@@ -56,7 +59,8 @@ export const styles = {
   iconButton: {
     margin: '-10px -10px 0 0',
     '--padding-start': '8px',
-    '--padding-end': '8px'
+    '--padding-end': '8px',
+    '--color': 'var(--ion-text-color)'
   },
   stats: {
     display: 'grid',
@@ -69,7 +73,8 @@ export const styles = {
   },
   statValue: {
     fontSize: '1.2em',
-    fontWeight: '600'
+    fontWeight: '600',
+    color: 'var(--ion-text-color)'
   },
   statLabel: {
     fontSize: '0.8em',
@@ -80,26 +85,32 @@ export const styles = {
     cursor: 'pointer',
     padding: '4px',
     borderRadius: '4px',
-    transition: 'background-color 0.2s'
+    transition: 'background-color 0.2s',
+    ':hover': {
+      backgroundColor: 'var(--ion-color-light)'
+    }
   },
   detailsBox: {
     marginBottom: '20px',
     padding: '12px',
     borderRadius: '8px',
     backgroundColor: 'var(--ion-color-light)',
-    fontSize: '0.9em'
+    fontSize: '0.9em',
+    border: '1px solid var(--ion-border-color)',
+    color: 'var(--ion-text-color)'
   },
   detailRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: '8px'
+    marginBottom: '8px',
+    color: 'var(--ion-text-color)'
   },
   activeSession: {
     marginBottom: '20px',
     padding: '12px',
     borderRadius: '12px',
     backgroundColor: 'var(--ion-color-warning)',
-    color: 'white',
+    color: 'var(--ion-color-warning-contrast)',
     textAlign: 'center',
     fontWeight: '500',
     fontSize: '1.1em'
@@ -112,6 +123,7 @@ export const styles = {
     padding: '8px 12px',
     borderRadius: '8px',
     backgroundColor: `${color}15`,
-    color: color
+    color: color,
+    border: `1px solid ${color}30`
   })
 } as const; 

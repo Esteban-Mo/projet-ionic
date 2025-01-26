@@ -7,21 +7,23 @@ export const styles = {
     maxWidth: '1200px',
     margin: '0 auto',
     animation: 'fadeIn 0.5s ease-out',
+    background: 'var(--ion-background-color)'
   },
 
   globalStatsCard: {
     background: 'linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%)',
     borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
     animation: 'slideUp 0.5s ease-out',
+    border: '1px solid var(--ion-border-color)'
   },
 
   globalStatsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
     gap: '16px',
-    padding: '8px',
+    padding: '16px',
   },
 
   statItem: {
@@ -30,11 +32,13 @@ export const styles = {
     alignItems: 'center',
     padding: '16px',
     borderRadius: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     transition: 'transform 0.2s ease',
     cursor: 'pointer',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     ':hover': {
       transform: 'translateY(-2px)',
+      backgroundColor: 'rgba(255, 255, 255, 0.25)',
     },
   },
 
@@ -49,21 +53,23 @@ export const styles = {
 
   statLabel: {
     fontSize: '0.9em',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(255, 255, 255, 0.95)',
     textAlign: 'center' as const,
   },
 
   chartCard: {
     borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
     animation: 'slideUp 0.5s ease-out',
     background: 'var(--ion-card-background)',
+    border: '1px solid var(--ion-border-color)'
   },
 
   chartHeader: {
     padding: '16px',
-    borderBottom: '1px solid var(--ion-color-light)',
+    borderBottom: '1px solid var(--ion-border-color)',
+    background: 'var(--ion-color-light)'
   },
 
   chartTitle: {
@@ -81,8 +87,11 @@ export const styles = {
   },
 
   chartContainer: {
-    margin: '8px -16px -16px',
+    margin: '8px',
     animation: 'fadeIn 0.5s ease-out',
+    padding: '16px',
+    background: 'var(--ion-background-color)',
+    borderRadius: '8px'
   },
 } as const;
 
