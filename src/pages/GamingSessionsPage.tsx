@@ -18,7 +18,7 @@ import {
   IonThumbnail,
   IonSpinner,
 } from '@ionic/react';
-import { add, stopwatch, time, gameController } from 'ionicons/icons';
+import { add, stopwatch, time, gameController, trash } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
 import { searchGames, FreeGame } from '../services/GameService';
 import debounce from 'lodash/debounce';
@@ -66,8 +66,9 @@ const GameCard: React.FC<{
   currentSessionTime: string;
   onStartSession: () => void;
   onEndSession: () => void;
+  onDelete: () => void;
   formatDuration: (minutes: number) => string;
-}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, formatDuration }) => (
+}> = ({ game, stats, isActiveGame, currentSessionTime, onStartSession, onEndSession, onDelete, formatDuration }) => (
   <IonCard style={{ 
     margin: '16px', 
     borderRadius: '16px',
@@ -110,27 +111,50 @@ const GameCard: React.FC<{
       </div>
       
       <div style={{ padding: '20px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <h2 style={{ 
-            margin: '0 0 8px 0',
-            fontSize: '1.4em',
-            fontWeight: '600'
-          }}>
-            {game.name}
-          </h2>
-          {game.genre && (
-            <div style={{ 
-              display: 'inline-block',
-              padding: '4px 12px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--ion-color-primary)',
-              color: 'white',
-              fontSize: '0.8em',
-              fontWeight: '500'
+        <div style={{ 
+          marginBottom: '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start'
+        }}>
+          <div>
+            <h2 style={{ 
+              margin: '0 0 8px 0',
+              fontSize: '1.4em',
+              fontWeight: '600'
             }}>
-              {game.genre}
-            </div>
-          )}
+              {game.name}
+            </h2>
+            {game.genre && (
+              <div style={{ 
+                display: 'inline-block',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                backgroundColor: 'var(--ion-color-primary)',
+                color: 'white',
+                fontSize: '0.8em',
+                fontWeight: '500'
+              }}>
+                {game.genre}
+              </div>
+            )}
+          </div>
+          <IonButton
+            fill="clear"
+            color="medium"
+            onClick={onDelete}
+            style={{ 
+              margin: '-10px -10px 0 0',
+              '--padding-start': '8px',
+              '--padding-end': '8px',
+              opacity: '0.6'
+            }}
+          >
+            <IonIcon 
+              icon={trash} 
+              style={{ fontSize: '1.1em' }}
+            />
+          </IonButton>
         </div>
 
         <div style={{ 
@@ -230,6 +254,7 @@ const GamingSessionsPage: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [gameToDelete, setGameToDelete] = useState<Game | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -381,6 +406,24 @@ const GamingSessionsPage: React.FC = () => {
     setShowNewGameModal(false);
   };
 
+  // Fonction pour supprimer un jeu et ses sessions
+  const deleteGame = (game: Game) => {
+    // Supprimer toutes les sessions associées au jeu
+    const updatedSessions = sessions.filter(session => session.gameId !== game.id);
+    setSessions(updatedSessions);
+
+    // Si une session active existe pour ce jeu, l'arrêter
+    if (activeSession?.gameId === game.id) {
+      setActiveSession(null);
+      setCurrentSessionTime('00:00:00');
+    }
+
+    // Supprimer le jeu
+    const updatedGames = games.filter(g => g.id !== game.id);
+    setGames(updatedGames);
+    setGameToDelete(null);
+  };
+
   return (
     <IonPage>
       <IonHeader>
@@ -417,6 +460,7 @@ const GamingSessionsPage: React.FC = () => {
                 currentSessionTime={currentSessionTime}
                 onStartSession={() => startSession(game.id)}
                 onEndSession={endSession}
+                onDelete={() => setGameToDelete(game)}
                 formatDuration={formatDuration}
               />
             );
@@ -517,6 +561,66 @@ const GamingSessionsPage: React.FC = () => {
               </IonButton>
             )}
           </IonContent>
+        </IonModal>
+
+        {/* Modal de confirmation de suppression */}
+        <IonModal 
+          isOpen={!!gameToDelete} 
+          onDidDismiss={() => setGameToDelete(null)}
+          breakpoints={[0, 0.4]}
+          initialBreakpoint={0.4}
+          style={{
+            '--width': '90%',
+            '--height': 'auto',
+            '--max-width': '300px',
+            '--border-radius': '16px'
+          }}
+        >
+          <div style={{ 
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ 
+                margin: '0 0 10px 0',
+                fontSize: '1.2em',
+                fontWeight: '600'
+              }}>
+                Supprimer {gameToDelete?.name} ?
+              </h3>
+              <p style={{ 
+                color: 'var(--ion-color-medium)',
+                fontSize: '0.9em',
+                margin: 0
+              }}>
+                Les sessions associées seront également supprimées.
+              </p>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px'
+            }}>
+              <IonButton
+                expand="block"
+                fill="outline"
+                color="medium"
+                onClick={() => setGameToDelete(null)}
+                style={{ margin: 0 }}
+              >
+                Annuler
+              </IonButton>
+              <IonButton
+                expand="block"
+                color="danger"
+                onClick={() => gameToDelete && deleteGame(gameToDelete)}
+                style={{ margin: 0 }}
+              >
+                Supprimer
+              </IonButton>
+            </div>
+          </div>
         </IonModal>
 
         <IonFab vertical="bottom" horizontal="end" slot="fixed" style={{ margin: '16px' }}>
