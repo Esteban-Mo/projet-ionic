@@ -80,3 +80,13 @@ http://ionicframework.com/docs/theming/ */
   --ion-tab-bar-background: #ffffff;
   --ion-card-background: #ffffff;
 }
+
+/* Modal styles */
+.modal-delete::part(content) {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}

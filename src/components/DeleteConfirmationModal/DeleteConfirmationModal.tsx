@@ -20,9 +20,13 @@ export const DeleteConfirmationModal: React.FC<Props> = ({
     <IonModal 
       isOpen={isOpen} 
       onDidDismiss={onClose}
-      breakpoints={[0, 0.4]}
-      initialBreakpoint={0.4}
-      style={commonStyles.modalBase}
+      className="modal-delete"
+      style={{
+        ...commonStyles.modalBase,
+        '--height': 'auto',
+        '--width': '90%',
+        '--max-width': '300px'
+      }}
     >
       <div style={styles.container}>
         <div style={styles.content}>
