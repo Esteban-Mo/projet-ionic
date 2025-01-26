@@ -10,6 +10,7 @@ import {
   IonCardTitle,
   IonCardContent,
   useIonViewWillEnter,
+  IonIcon,
 } from '@ionic/react';
 import {
   BarChart,
@@ -26,6 +27,15 @@ import {
 import { Game, GameSession } from '../models/GameSession';
 import { StorageService } from '../services/StorageService';
 import { styles } from './StatisticsPage.styles';
+import {
+  timeOutline,
+  documentTextOutline,
+  hourglassOutline,
+  gameControllerOutline,
+  calendarOutline,
+  timeSharp,
+  pieChartOutline,
+} from 'ionicons/icons';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 const COLORS = [
@@ -147,19 +157,31 @@ const StatisticsPage: React.FC = () => {
             <IonCardContent>
               <div style={styles.globalStatsGrid}>
                 <div style={styles.statItem}>
-                  <div style={styles.statValue}>{globalStats.totalHours}h</div>
+                  <div style={styles.statValue}>
+                    <IonIcon icon={timeOutline} style={{ marginRight: '8px' }} />
+                    {globalStats.totalHours}h
+                  </div>
                   <div style={styles.statLabel}>Temps total</div>
                 </div>
                 <div style={styles.statItem}>
-                  <div style={styles.statValue}>{globalStats.totalSessions}</div>
+                  <div style={styles.statValue}>
+                    <IonIcon icon={documentTextOutline} style={{ marginRight: '8px' }} />
+                    {globalStats.totalSessions}
+                  </div>
                   <div style={styles.statLabel}>Sessions</div>
                 </div>
                 <div style={styles.statItem}>
-                  <div style={styles.statValue}>{globalStats.averageSessionHours}h</div>
+                  <div style={styles.statValue}>
+                    <IonIcon icon={hourglassOutline} style={{ marginRight: '8px' }} />
+                    {globalStats.averageSessionHours}h
+                  </div>
                   <div style={styles.statLabel}>Moyenne/session</div>
                 </div>
                 <div style={styles.statItem}>
-                  <div style={styles.statValue}>{globalStats.totalGames}</div>
+                  <div style={styles.statValue}>
+                    <IonIcon icon={gameControllerOutline} style={{ marginRight: '8px' }} />
+                    {globalStats.totalGames}
+                  </div>
                   <div style={styles.statLabel}>Jeux</div>
                 </div>
               </div>
@@ -167,21 +189,29 @@ const StatisticsPage: React.FC = () => {
           </IonCard>
 
           {/* Graphique par jour */}
-          <IonCard>
-            <IonCardHeader>
-              <IonCardTitle>Temps de jeu par jour</IonCardTitle>
+          <IonCard style={styles.chartCard}>
+            <IonCardHeader style={styles.chartHeader}>
+              <IonCardTitle style={styles.chartTitle}>
+                <IonIcon icon={calendarOutline} style={styles.chartIcon} />
+                Temps de jeu par jour
+              </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div style={styles.chartContainer}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={playTimeByDay}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis unit="h" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ion-color-medium)" opacity={0.3} />
+                    <XAxis dataKey="name" stroke="var(--ion-color-medium)" />
+                    <YAxis unit="h" stroke="var(--ion-color-medium)" />
                     <Tooltip 
                       formatter={(value: number) => [`${value}h`, 'Temps de jeu']}
+                      contentStyle={{
+                        backgroundColor: 'var(--ion-background-color)',
+                        border: '1px solid var(--ion-color-medium)',
+                        borderRadius: '8px'
+                      }}
                     />
-                    <Bar dataKey="hours" fill="var(--ion-color-primary)" />
+                    <Bar dataKey="hours" fill="var(--ion-color-primary)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -189,24 +219,32 @@ const StatisticsPage: React.FC = () => {
           </IonCard>
 
           {/* Graphique par période */}
-          <IonCard>
-            <IonCardHeader>
-              <IonCardTitle>Temps de jeu par période</IonCardTitle>
+          <IonCard style={styles.chartCard}>
+            <IonCardHeader style={styles.chartHeader}>
+              <IonCardTitle style={styles.chartTitle}>
+                <IonIcon icon={timeSharp} style={styles.chartIcon} />
+                Temps de jeu par période
+              </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div style={styles.chartContainer}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={playTimeByPeriod}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis unit="h" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--ion-color-medium)" opacity={0.3} />
+                    <XAxis dataKey="name" stroke="var(--ion-color-medium)" />
+                    <YAxis unit="h" stroke="var(--ion-color-medium)" />
                     <Tooltip 
                       formatter={(value: number, name: string, props: any) => {
                         const item = props.payload;
                         return [`${value}h`, item.fullName];
                       }}
+                      contentStyle={{
+                        backgroundColor: 'var(--ion-background-color)',
+                        border: '1px solid var(--ion-color-medium)',
+                        borderRadius: '8px'
+                      }}
                     />
-                    <Bar dataKey="hours" fill="var(--ion-color-secondary)" />
+                    <Bar dataKey="hours" fill="var(--ion-color-secondary)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -214,9 +252,12 @@ const StatisticsPage: React.FC = () => {
           </IonCard>
 
           {/* Graphique par jeu */}
-          <IonCard>
-            <IonCardHeader>
-              <IonCardTitle>Top 10 des jeux les plus joués</IonCardTitle>
+          <IonCard style={styles.chartCard}>
+            <IonCardHeader style={styles.chartHeader}>
+              <IonCardTitle style={styles.chartTitle}>
+                <IonIcon icon={pieChartOutline} style={styles.chartIcon} />
+                Top 10 des jeux les plus joués
+              </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <div style={styles.chartContainer}>
@@ -237,6 +278,11 @@ const StatisticsPage: React.FC = () => {
                     </Pie>
                     <Tooltip 
                       formatter={(value: number) => [`${value}h`, 'Temps de jeu']}
+                      contentStyle={{
+                        backgroundColor: 'var(--ion-background-color)',
+                        border: '1px solid var(--ion-color-medium)',
+                        borderRadius: '8px'
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
