@@ -1,43 +1,12 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  useIonViewWillEnter,
-  IonIcon,
-} from '@ionic/react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+import React, { useMemo, useState } from 'react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardHeader, IonCardTitle, IonCardContent, useIonViewWillEnter, IonIcon } from '@ionic/react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Game, GameSession } from '../models/GameSession';
 import { StorageService } from '../services/StorageService';
 import { styles } from './StatisticsPage.styles';
-import {
-  timeOutline,
-  documentTextOutline,
-  hourglassOutline,
-  gameControllerOutline,
-  calendarOutline,
-  timeSharp,
-  pieChartOutline,
-} from 'ionicons/icons';
+import { timeOutline, documentTextOutline, hourglassOutline, gameControllerOutline, calendarOutline, timeSharp, pieChartOutline, } from 'ionicons/icons';
 
-const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+const DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const COLORS = [
   '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD',
   '#D4A5A5', '#9A8194', '#392F5A', '#31A9B8', '#258039',
@@ -45,7 +14,7 @@ const COLORS = [
 
 const PERIODS = [
   { name: 'Matin (5h-12h)', start: 5, end: 12, shortName: 'Matin' },
-  { name: 'Après-midi (12h-18h)', start: 12, end: 18, shortName: 'Après-midi' },
+  { name: 'Midi (12h-18h)', start: 12, end: 18, shortName: 'Midi' },
   { name: 'Soir (18h-23h)', start: 18, end: 23, shortName: 'Soir' },
   { name: 'Nuit (23h-5h)', start: 23, end: 5, shortName: 'Nuit' }
 ];
@@ -63,7 +32,7 @@ const StatisticsPage: React.FC = () => {
   // Statistiques par jour de la semaine
   const playTimeByDay = useMemo(() => {
     const dayStats = DAYS.map(day => ({ name: day, minutes: 0 }));
-    
+
     sessions.forEach(session => {
       if (session.endTime && session.duration) {
         let dayIndex = new Date(session.endTime).getDay() - 1;
@@ -80,19 +49,19 @@ const StatisticsPage: React.FC = () => {
 
   // Statistiques par période de la journée
   const playTimeByPeriod = useMemo(() => {
-    const periodStats = PERIODS.map(period => ({ 
+    const periodStats = PERIODS.map(period => ({
       name: period.shortName,
       fullName: period.name,
       minutes: 0,
       start: period.start,
       end: period.end
     }));
-    
+
     sessions.forEach(session => {
       if (session.endTime && session.duration) {
         const hour = new Date(session.endTime).getHours();
-        const period = periodStats.find(p => 
-          p.end > p.start 
+        const period = periodStats.find(p =>
+          p.end > p.start
             ? (hour >= p.start && hour < p.end)
             : (hour >= p.start || hour < p.end)
         );
@@ -112,7 +81,7 @@ const StatisticsPage: React.FC = () => {
   // Statistiques par jeu
   const playTimeByGame = useMemo(() => {
     const gameStats = new Map<number, number>();
-    
+
     sessions.forEach(session => {
       if (session.duration) {
         const current = gameStats.get(session.gameId) || 0;
@@ -133,7 +102,7 @@ const StatisticsPage: React.FC = () => {
   const globalStats = useMemo(() => {
     const totalMinutes = sessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
     const totalSessions = sessions.filter(s => s.endTime).length;
-    
+
     return {
       totalHours: Math.round(totalMinutes / 60 * 10) / 10,
       totalSessions,
@@ -203,7 +172,7 @@ const StatisticsPage: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--ion-color-medium)" opacity={0.3} />
                     <XAxis dataKey="name" stroke="var(--ion-color-medium)" />
                     <YAxis unit="h" stroke="var(--ion-color-medium)" />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [`${value}h`, 'Temps de jeu']}
                       contentStyle={{
                         backgroundColor: 'var(--ion-background-color)',
@@ -211,7 +180,12 @@ const StatisticsPage: React.FC = () => {
                         borderRadius: '8px'
                       }}
                     />
-                    <Bar dataKey="hours" fill="var(--ion-color-primary)" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="hours"
+                      fill="var(--ion-color-primary)"
+                      radius={[4, 4, 0, 0]}
+                      barSize={20}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -233,7 +207,7 @@ const StatisticsPage: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--ion-color-medium)" opacity={0.3} />
                     <XAxis dataKey="name" stroke="var(--ion-color-medium)" />
                     <YAxis unit="h" stroke="var(--ion-color-medium)" />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string, props: any) => {
                         const item = props.payload;
                         return [`${value}h`, item.fullName];
@@ -270,13 +244,13 @@ const StatisticsPage: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={({name, value}) => `${name} (${value}h)`}
+                      label={({ name, value }) => `${name} (${value}h)`}
                     >
                       {playTimeByGame.map((entry, index) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number) => [`${value}h`, 'Temps de jeu']}
                       contentStyle={{
                         backgroundColor: 'var(--ion-background-color)',
