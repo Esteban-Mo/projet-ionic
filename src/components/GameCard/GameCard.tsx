@@ -22,6 +22,27 @@ interface Props {
   onUpdateImage: (gameId: number, newImage: string) => void;
 }
 
+
+const getBadgeInfo = (totalHours: number): { label: string; color: string; icon: string } => {
+  if (totalHours >= 50) return { label: 'Expert', color: 'var(--ion-color-warning)', icon: '🏆' };
+  if (totalHours >= 10) return { label: 'Passionné', color: 'var(--ion-color-success)', icon: '🎮' };
+  if (totalHours >= 2) return { label: 'Amateur', color: 'var(--ion-color-primary)', icon: '🎯' };
+  return { label: 'Débutant', color: 'var(--ion-color-medium)', icon: '🌟' };
+};
+
+const formatLastPlayed = (date?: Date): string => {
+  if (!date) return 'Pas encore joué';
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return 'Aujourd\'hui';
+  if (days === 1) return 'Hier';
+  if (days < 7) return `Il y a ${days} jours`;
+  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaine${Math.floor(days / 7) > 1 ? 's' : ''}`;
+  return `Il y a ${Math.floor(days / 30)} mois`;
+}; 
+
 export const GameCard: React.FC<Props> = (props: Props) => {
   const { game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration, onUpdateImage } = props;
   const [showEditTimeModal, setShowEditTimeModal] = useState(false);
@@ -195,23 +216,3 @@ export const GameCard: React.FC<Props> = (props: Props) => {
     </IonCard>
   );
 };
-
-const getBadgeInfo = (totalHours: number): { label: string; color: string; icon: string } => {
-  if (totalHours >= 50) return { label: 'Expert', color: 'var(--ion-color-warning)', icon: '🏆' };
-  if (totalHours >= 10) return { label: 'Passionné', color: 'var(--ion-color-success)', icon: '🎮' };
-  if (totalHours >= 2) return { label: 'Amateur', color: 'var(--ion-color-primary)', icon: '🎯' };
-  return { label: 'Débutant', color: 'var(--ion-color-medium)', icon: '🌟' };
-};
-
-const formatLastPlayed = (date?: Date): string => {
-  if (!date) return 'Pas encore joué';
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) return 'Aujourd\'hui';
-  if (days === 1) return 'Hier';
-  if (days < 7) return `Il y a ${days} jours`;
-  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaine${Math.floor(days / 7) > 1 ? 's' : ''}`;
-  return `Il y a ${Math.floor(days / 30)} mois`;
-}; 

@@ -7,7 +7,6 @@ const STORAGE_KEYS = {
 };
 
 export const StorageService = {
-  // Sauvegarder les données
   saveGames: (games: Game[]) => {
     localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games));
   },

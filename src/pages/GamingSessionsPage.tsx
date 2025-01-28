@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonButton,
-  IonIcon,
-  IonFab,
-  IonFabButton,
-} from '@ionic/react';
+import {IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonIcon, IonFab, IonFabButton} from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
 import { FreeGame } from '../services/GameService';
@@ -20,7 +10,6 @@ import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal/D
 import { styles } from './GamingSessionsPage.styles';
 
 const GamingSessionsPage: React.FC = () => {
-  // États
   const [games, setGames] = useState<Game[]>(() => StorageService.loadGames());
   const [sessions, setSessions] = useState<GameSession[]>(() => StorageService.loadSessions());
   const [activeSession, setActiveSession] = useState<GameSession | null>(() => StorageService.loadActiveSession());
@@ -28,7 +17,6 @@ const GamingSessionsPage: React.FC = () => {
   const [currentSessionTime, setCurrentSessionTime] = useState<string>('00:00:00');
   const [gameToDelete, setGameToDelete] = useState<Game | null>(null);
 
-  // Gestion du temps de session active
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -57,7 +45,6 @@ const GamingSessionsPage: React.FC = () => {
     };
   }, [activeSession]);
 
-  // Persistance des données
   useEffect(() => {
     StorageService.saveGames(games);
   }, [games]);
@@ -70,7 +57,6 @@ const GamingSessionsPage: React.FC = () => {
     StorageService.saveActiveSession(activeSession);
   }, [activeSession]);
 
-  // Fonctions de gestion des sessions
   const startSession = (gameId: number) => {
     const newSession: GameSession = {
       id: sessions.length + 1,
@@ -100,7 +86,6 @@ const GamingSessionsPage: React.FC = () => {
     }
   };
 
-  // Formatage du temps
   const formatDuration = (minutes: number, hasPlayed: boolean = false): string => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
@@ -116,7 +101,6 @@ const GamingSessionsPage: React.FC = () => {
     return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
   };
 
-  // Calcul des statistiques
   const calculateGameStats = (gameId: number): GameStats => {
     const gamesSessions = sessions.filter(s => s.gameId === gameId && s.endTime);
     const totalTime = gamesSessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
@@ -128,7 +112,6 @@ const GamingSessionsPage: React.FC = () => {
     };
   };
 
-  // Gestion des jeux
   const addGame = (freeGame: FreeGame) => {
     const newGame: Game = {
       id: games.length + 1,
