@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardHeader, IonCardTitle, IonCardContent, useIonViewWillEnter, IonIcon } from '@ionic/react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Game, GameSession } from '../models/GameSession';
@@ -19,7 +19,7 @@ const PERIODS = [
   { name: 'Nuit (23h-5h)', start: 23, end: 5, shortName: 'Nuit' }
 ];
 
-const StatisticsPage: React.FC = () => {
+const StatisticsPage = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [sessions, setSessions] = useState<GameSession[]>([]);
 

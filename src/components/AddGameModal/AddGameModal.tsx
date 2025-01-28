@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { IonModal, IonHeader, IonToolbar, IonTitle, IonButton, IonContent, IonSearchbar, IonList, IonItem, IonLabel, IonThumbnail, IonSpinner, IonIcon, IonText, IonNote } from '@ionic/react';
 import { searchGames, FreeGame } from '../../services/GameService';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
@@ -15,7 +15,7 @@ interface Props {
   existingGames: Game[];
 }
 
-export const AddGameModal: React.FC<Props> = (props: Props) => {
+export const AddGameModal = (props: Props) => {
   const { isOpen, onClose, onAddGame, onAddManualGame, existingGames } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<FreeGame[]>([]);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IonCard, IonButton, IonIcon } from '@ionic/react';
 import { stopwatch, time, trash, star, starOutline, camera } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
@@ -43,7 +43,7 @@ const formatLastPlayed = (date?: Date): string => {
   return `Il y a ${Math.floor(days / 30)} mois`;
 }; 
 
-export const GameCard: React.FC<Props> = (props: Props) => {
+export const GameCard = (props: Props) => {
   const { game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration, onUpdateImage } = props;
   const [showEditTimeModal, setShowEditTimeModal] = useState(false);
   const totalHours = stats.totalTime / 60;

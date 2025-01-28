@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IonModal, IonButton } from '@ionic/react';
 import { styles } from './EditTimeModal.styles';
 import { commonStyles } from '../../styles/common.styles';
@@ -11,7 +11,7 @@ interface Props {
   initialMinutes: number;
 }
 
-export const EditTimeModal: React.FC<Props> = (props: Props) => {
+export const EditTimeModal = (props: Props) => {
   const { isOpen, onClose, onSave, initialHours, initialMinutes } = props;
   const [hours, setHours] = useState(initialHours);
   const [minutes, setMinutes] = useState(initialMinutes);

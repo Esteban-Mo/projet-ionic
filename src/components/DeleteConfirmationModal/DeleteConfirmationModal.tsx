@@ -1,4 +1,3 @@
-import React from 'react';
 import { IonModal, IonButton } from '@ionic/react';
 import { styles } from './DeleteConfirmationModal.styles';
 import { commonStyles } from '../../styles/common.styles';
@@ -10,7 +9,7 @@ interface Props {
   gameName: string;
 }
 
-export const DeleteConfirmationModal: React.FC<Props> = (props: Props) => {
+export const DeleteConfirmationModal = (props: Props) => {
   const { isOpen, onClose, onConfirm, gameName } = props;
   return (
     <IonModal 

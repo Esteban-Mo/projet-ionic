@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonIcon, IonFab, IonFabButton} from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { Game, GameSession, GameStats } from '../models/GameSession';
@@ -9,7 +9,7 @@ import { AddGameModal } from '../components/AddGameModal/AddGameModal';
 import { DeleteConfirmationModal } from '../components/DeleteConfirmationModal/DeleteConfirmationModal';
 import { styles } from './GamingSessionsPage.styles';
 
-const GamingSessionsPage: React.FC = () => {
+const GamingSessionsPage = () => {
   const [games, setGames] = useState<Game[]>(() => StorageService.loadGames());
   const [sessions, setSessions] = useState<GameSession[]>(() => StorageService.loadSessions());
   const [activeSession, setActiveSession] = useState<GameSession | null>(() => StorageService.loadActiveSession());
