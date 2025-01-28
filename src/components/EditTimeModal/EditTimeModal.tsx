@@ -11,13 +11,8 @@ interface Props {
   initialMinutes: number;
 }
 
-export const EditTimeModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  onSave,
-  initialHours,
-  initialMinutes
-}) => {
+export const EditTimeModal: React.FC<Props> = (props: Props) => {
+  const { isOpen, onClose, onSave, initialHours, initialMinutes } = props;
   const [hours, setHours] = useState(initialHours);
   const [minutes, setMinutes] = useState(initialMinutes);
 

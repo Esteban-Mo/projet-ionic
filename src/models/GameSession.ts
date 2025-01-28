@@ -15,13 +15,13 @@ export interface GameSession {
   gameId: number;
   startTime: Date;
   endTime?: Date;
-  duration?: number; // en minutes
+  duration?: number;
   notes?: string;
 }
 
 export interface GameStats {
-  totalTime: number; // en minutes
+  totalTime: number;
   sessionsCount: number;
-  averageSessionTime: number; // en minutes
+  averageSessionTime: number;
   lastPlayed?: Date;
 } 

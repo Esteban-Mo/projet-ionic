@@ -10,12 +10,8 @@ interface Props {
   gameName: string;
 }
 
-export const DeleteConfirmationModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  gameName
-}) => {
+export const DeleteConfirmationModal: React.FC<Props> = (props: Props) => {
+  const { isOpen, onClose, onConfirm, gameName } = props;
   return (
     <IonModal 
       isOpen={isOpen} 

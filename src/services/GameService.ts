@@ -39,7 +39,6 @@ export const searchGames = async (query: string): Promise<FreeGame[]> => {
       throw new Error('Format de réponse invalide');
     }
     
-    // Filtrer les jeux qui correspondent à la recherche
     const filteredGames = games.filter(game => 
       game.title?.toLowerCase().includes(query.toLowerCase()) ||
       game.genre?.toLowerCase().includes(query.toLowerCase()) ||

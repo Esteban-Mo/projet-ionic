@@ -1,21 +1,5 @@
 import React from 'react';
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonThumbnail,
-  IonNote,
-  IonItemSliding,
-  IonItemOptions,
-  IonItemOption,
-  IonButton,
-  IonIcon,
-} from '@ionic/react';
+import {IonContent,IonHeader,IonPage,IonTitle,IonToolbar,IonList,IonItem,IonLabel,IonThumbnail,IonNote,IonItemSliding,IonItemOptions,IonItemOption,IonButton,IonIcon} from '@ionic/react';
 import { add, water, trash } from 'ionicons/icons';
 import { Plant } from '../models/Plant';
 

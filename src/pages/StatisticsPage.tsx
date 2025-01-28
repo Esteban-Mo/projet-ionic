@@ -23,20 +23,18 @@ const StatisticsPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [sessions, setSessions] = useState<GameSession[]>([]);
 
-  // Se déclenche à chaque fois que la page devient visible
   useIonViewWillEnter(() => {
     setGames(StorageService.loadGames());
     setSessions(StorageService.loadSessions());
   });
 
-  // Statistiques par jour de la semaine
   const playTimeByDay = useMemo(() => {
     const dayStats = DAYS.map(day => ({ name: day, minutes: 0 }));
 
     sessions.forEach(session => {
       if (session.endTime && session.duration) {
         let dayIndex = new Date(session.endTime).getDay() - 1;
-        if (dayIndex === -1) dayIndex = 6; // Dimanche passe de 0 à 6
+        if (dayIndex === -1) dayIndex = 6;
         dayStats[dayIndex].minutes += session.duration;
       }
     });
@@ -47,7 +45,6 @@ const StatisticsPage: React.FC = () => {
     }));
   }, [sessions]);
 
-  // Statistiques par période de la journée
   const playTimeByPeriod = useMemo(() => {
     const periodStats = PERIODS.map(period => ({
       name: period.shortName,
@@ -78,7 +75,6 @@ const StatisticsPage: React.FC = () => {
     }));
   }, [sessions]);
 
-  // Statistiques par jeu
   const playTimeByGame = useMemo(() => {
     const gameStats = new Map<number, number>();
 
@@ -92,13 +88,12 @@ const StatisticsPage: React.FC = () => {
     return Array.from(gameStats.entries())
       .map(([gameId, minutes]) => ({
         name: games.find(g => g.id === gameId)?.name || 'Inconnu',
-        value: Math.round(minutes / 60 * 10) / 10 // Conversion en heures avec 1 décimale
+        value: Math.round(minutes / 60 * 10) / 10
       }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 10); // Top 10 des jeux
+      .slice(0, 10);
   }, [games, sessions]);
 
-  // Statistiques globales
   const globalStats = useMemo(() => {
     const totalMinutes = sessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
     const totalSessions = sessions.filter(s => s.endTime).length;
@@ -121,7 +116,6 @@ const StatisticsPage: React.FC = () => {
 
       <IonContent>
         <div style={styles.statsGrid}>
-          {/* Statistiques globales */}
           <IonCard style={styles.globalStatsCard}>
             <IonCardContent>
               <div style={styles.globalStatsGrid}>
@@ -157,7 +151,6 @@ const StatisticsPage: React.FC = () => {
             </IonCardContent>
           </IonCard>
 
-          {/* Graphique par jour */}
           <IonCard style={styles.chartCard}>
             <IonCardHeader style={styles.chartHeader}>
               <IonCardTitle style={styles.chartTitle}>
@@ -192,7 +185,6 @@ const StatisticsPage: React.FC = () => {
             </IonCardContent>
           </IonCard>
 
-          {/* Graphique par période */}
           <IonCard style={styles.chartCard}>
             <IonCardHeader style={styles.chartHeader}>
               <IonCardTitle style={styles.chartTitle}>
@@ -225,7 +217,6 @@ const StatisticsPage: React.FC = () => {
             </IonCardContent>
           </IonCard>
 
-          {/* Graphique par jeu */}
           <IonCard style={styles.chartCard}>
             <IonCardHeader style={styles.chartHeader}>
               <IonCardTitle style={styles.chartTitle}>

@@ -24,7 +24,6 @@ export const StorageService = {
     }
   },
 
-  // Charger les données
   loadGames: (): Game[] => {
     const gamesStr = localStorage.getItem(STORAGE_KEYS.GAMES);
     return gamesStr ? JSON.parse(gamesStr) : [];
@@ -35,7 +34,6 @@ export const StorageService = {
     if (!sessionsStr) return [];
     
     const sessions: GameSession[] = JSON.parse(sessionsStr);
-    // Convertir les chaînes de date en objets Date
     return sessions.map(session => ({
       ...session,
       startTime: new Date(session.startTime),
@@ -48,7 +46,6 @@ export const StorageService = {
     if (!sessionStr) return null;
     
     const session: GameSession = JSON.parse(sessionStr);
-    // Convertir les chaînes de date en objets Date
     return {
       ...session,
       startTime: new Date(session.startTime),
@@ -56,7 +53,6 @@ export const StorageService = {
     };
   },
 
-  // Effacer toutes les données
   clearAll: () => {
     localStorage.removeItem(STORAGE_KEYS.GAMES);
     localStorage.removeItem(STORAGE_KEYS.SESSIONS);

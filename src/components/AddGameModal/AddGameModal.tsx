@@ -1,21 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButton,
-  IonContent,
-  IonSearchbar,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonThumbnail,
-  IonSpinner,
-  IonIcon,
-  IonText,
-  IonNote
-} from '@ionic/react';
+import { IonModal, IonHeader, IonToolbar, IonTitle, IonButton, IonContent, IonSearchbar, IonList, IonItem, IonLabel, IonThumbnail, IonSpinner, IonIcon, IonText, IonNote } from '@ionic/react';
 import { searchGames, FreeGame } from '../../services/GameService';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './AddGameModal.styles';
@@ -31,13 +15,8 @@ interface Props {
   existingGames: Game[];
 }
 
-export const AddGameModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  onAddGame,
-  onAddManualGame,
-  existingGames
-}) => {
+export const AddGameModal: React.FC<Props> = (props: Props) => {
+  const { isOpen, onClose, onAddGame, onAddManualGame, existingGames } = props;
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<FreeGame[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -59,8 +38,8 @@ export const AddGameModal: React.FC<Props> = ({
           setSearchResults(results);
         } catch (error) {
           setSearchError(
-            error instanceof Error 
-              ? error.message 
+            error instanceof Error
+              ? error.message
               : "Une erreur est survenue lors de la recherche"
           );
           setSearchResults([]);
@@ -100,8 +79,8 @@ export const AddGameModal: React.FC<Props> = ({
       <IonHeader>
         <IonToolbar>
           <IonTitle>Ajouter un jeu gratuit</IonTitle>
-          <IonButton 
-            slot="end" 
+          <IonButton
+            slot="end"
             fill="clear"
             onClick={handleClose}
           >
@@ -129,7 +108,7 @@ export const AddGameModal: React.FC<Props> = ({
           <div style={styles.error}>
             <IonIcon icon={alertCircleOutline} style={{ marginRight: '8px' }} />
             <IonText color="danger">{searchError}</IonText>
-            <IonButton 
+            <IonButton
               fill="clear"
               onClick={handleRetry}
               style={{ marginLeft: '8px' }}
@@ -143,8 +122,8 @@ export const AddGameModal: React.FC<Props> = ({
           {searchResults.map(game => {
             const exists = isGameExists(game);
             return (
-              <IonItem 
-                key={game.id} 
+              <IonItem
+                key={game.id}
                 button={!exists}
                 onClick={() => !exists && onAddGame(game)}
                 style={exists ? styles.existingGame : undefined}
@@ -152,8 +131,8 @@ export const AddGameModal: React.FC<Props> = ({
               >
                 <IonThumbnail slot="start" style={styles.thumbnail}>
                   {game.thumbnail && game.thumbnail !== 'N/A' ? (
-                    <img 
-                      src={game.thumbnail} 
+                    <img
+                      src={game.thumbnail}
                       alt={game.title}
                       style={styles.image}
                       onError={(e) => {
@@ -169,8 +148,8 @@ export const AddGameModal: React.FC<Props> = ({
                   <h2 style={styles.gameTitle}>
                     {game.title}
                     {exists && (
-                      <IonIcon 
-                        icon={checkmarkCircle} 
+                      <IonIcon
+                        icon={checkmarkCircle}
                         color="success"
                         style={{ marginLeft: '8px', verticalAlign: 'middle' }}
                       />
@@ -195,8 +174,8 @@ export const AddGameModal: React.FC<Props> = ({
         </IonList>
 
         {!isSearching && searchResults.length === 0 && searchTerm.trim() && !searchError && (
-          <IonButton 
-            expand="block" 
+          <IonButton
+            expand="block"
             style={styles.addButton}
             onClick={() => onAddManualGame(searchTerm.trim())}
           >

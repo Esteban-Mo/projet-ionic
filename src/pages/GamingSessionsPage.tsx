@@ -206,7 +206,6 @@ const GamingSessionsPage: React.FC = () => {
     setGames(updatedGames);
   };
 
-  // Tri des jeux
   const sortedGames = [...games].sort((a, b) => {
     if (a.isFavorite === b.isFavorite) {
       return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });

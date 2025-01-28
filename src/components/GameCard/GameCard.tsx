@@ -22,28 +22,8 @@ interface Props {
   onUpdateImage: (gameId: number, newImage: string) => void;
 }
 
-interface EditTimeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (hours: number, minutes: number) => void;
-  initialHours: number;
-  initialMinutes: number;
-}
-
-export const GameCard: React.FC<Props> = ({
-  game,
-  stats,
-  isActiveGame,
-  hasActiveSession,
-  currentSessionTime,
-  onStartSession,
-  onEndSession,
-  onDelete,
-  onToggleFavorite,
-  onEditTime,
-  formatDuration,
-  onUpdateImage
-}) => {
+export const GameCard: React.FC<Props> = (props: Props) => {
+  const { game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration, onUpdateImage } = props;
   const [showEditTimeModal, setShowEditTimeModal] = useState(false);
   const totalHours = stats.totalTime / 60;
   const badge = getBadgeInfo(totalHours);
@@ -57,7 +37,7 @@ export const GameCard: React.FC<Props> = ({
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Photos
       });
-      
+
       if (image.dataUrl) {
         onUpdateImage(game.id, image.dataUrl);
       }
@@ -71,8 +51,8 @@ export const GameCard: React.FC<Props> = ({
       <div style={styles.container}>
         <div style={styles.imageContainer} onClick={handleImageClick}>
           {game.coverImage && game.coverImage !== 'N/A' ? (
-            <img 
-              src={game.coverImage} 
+            <img
+              src={game.coverImage}
               alt={game.name}
               style={styles.image}
               onError={(e) => {
@@ -87,7 +67,7 @@ export const GameCard: React.FC<Props> = ({
             <IonIcon icon={camera} style={styles.cameraIcon} />
           </div>
         </div>
-        
+
         <div style={styles.content}>
           <div style={styles.header}>
             <div>
@@ -106,8 +86,8 @@ export const GameCard: React.FC<Props> = ({
                   opacity: game.isFavorite ? 1 : 0.6
                 }}
               >
-                <IonIcon 
-                  icon={game.isFavorite ? star : starOutline} 
+                <IonIcon
+                  icon={game.isFavorite ? star : starOutline}
                   style={{ fontSize: '1.2em' }}
                 />
               </IonButton>
@@ -120,8 +100,8 @@ export const GameCard: React.FC<Props> = ({
                   opacity: 0.6
                 }}
               >
-                <IonIcon 
-                  icon={trash} 
+                <IonIcon
+                  icon={trash}
                   style={{ fontSize: '1.1em' }}
                 />
               </IonButton>
@@ -141,9 +121,9 @@ export const GameCard: React.FC<Props> = ({
               <div style={styles.statLabel}>Sessions</div>
             </div>
             <div style={styles.statItem}>
-              <div 
+              <div
                 onClick={() => setShowEditTimeModal(true)}
-                style={{ 
+                style={{
                   ...styles.statValue,
                   ...styles.editableTime,
                   color: 'var(--ion-color-secondary)'
@@ -179,7 +159,7 @@ export const GameCard: React.FC<Props> = ({
           )}
 
           {isActiveGame ? (
-            <IonButton 
+            <IonButton
               expand="block"
               color="danger"
               onClick={onEndSession}
@@ -189,11 +169,11 @@ export const GameCard: React.FC<Props> = ({
               Arrêter la session
             </IonButton>
           ) : (
-            <IonButton 
+            <IonButton
               expand="block"
               onClick={onStartSession}
               disabled={hasActiveSession}
-              style={{ 
+              style={{
                 '--border-radius': '12px',
                 marginBottom: '0',
                 opacity: hasActiveSession ? '0.5' : '1'
@@ -232,7 +212,7 @@ const formatLastPlayed = (date?: Date): string => {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
+
   if (days === 0) return 'Aujourd\'hui';
   if (days === 1) return 'Hier';
   if (days < 7) return `Il y a ${days} jours`;

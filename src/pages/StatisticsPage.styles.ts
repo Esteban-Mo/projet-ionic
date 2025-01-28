@@ -95,7 +95,6 @@ export const styles = {
   },
 } as const;
 
-// Ajout des styles globaux pour les animations
 const style = document.createElement('style');
 style.textContent = `
   @keyframes fadeIn {
