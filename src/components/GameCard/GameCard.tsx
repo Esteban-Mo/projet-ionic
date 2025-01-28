@@ -123,11 +123,7 @@ export const GameCard: React.FC<Props> = (props: Props) => {
             <div style={styles.statItem}>
               <div
                 onClick={() => setShowEditTimeModal(true)}
-                style={{
-                  ...styles.statValue,
-                  ...styles.editableTime,
-                  color: 'var(--ion-color-secondary)'
-                }}
+                style={{ ...styles.statValue, ...styles.editableTime, color: 'var(--ion-color-secondary)' }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.backgroundColor = 'var(--ion-color-light)';
                 }}
