@@ -15,6 +15,9 @@ const config: CapacitorConfig = {
       spinnerColor: '#4a90e2',
       launchAutoHide: true,
       launchShowDuration: 1500
+    },
+    Camera: {
+      permissions: ['camera', 'photos']
     }
   }
 };

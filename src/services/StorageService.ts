@@ -61,5 +61,16 @@ export const StorageService = {
     localStorage.removeItem(STORAGE_KEYS.GAMES);
     localStorage.removeItem(STORAGE_KEYS.SESSIONS);
     localStorage.removeItem(STORAGE_KEYS.ACTIVE_SESSION);
+  },
+
+  updateGameImage: (gameId: number, newImage: string) => {
+    const games = StorageService.loadGames();
+    const updatedGames = games.map(game => 
+      game.id === gameId 
+        ? { ...game, coverImage: newImage }
+        : game
+    );
+    StorageService.saveGames(updatedGames);
+    return updatedGames;
   }
 }; 

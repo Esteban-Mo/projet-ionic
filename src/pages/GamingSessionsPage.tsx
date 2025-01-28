@@ -201,6 +201,11 @@ const GamingSessionsPage: React.FC = () => {
     }
   };
 
+  const updateGameImage = (gameId: number, newImage: string) => {
+    const updatedGames = StorageService.updateGameImage(gameId, newImage);
+    setGames(updatedGames);
+  };
+
   // Tri des jeux
   const sortedGames = [...games].sort((a, b) => {
     if (a.isFavorite === b.isFavorite) {
@@ -246,6 +251,7 @@ const GamingSessionsPage: React.FC = () => {
                 onToggleFavorite={() => toggleFavorite(game.id)}
                 onEditTime={(hours, minutes) => editGameTime(game.id, hours, minutes)}
                 formatDuration={(minutes) => formatDuration(minutes, stats.sessionsCount > 0)}
+                onUpdateImage={updateGameImage}
               />
             );
           })}

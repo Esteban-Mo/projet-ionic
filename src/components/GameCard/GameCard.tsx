@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { IonCard, IonButton, IonIcon } from '@ionic/react';
-import { stopwatch, time, trash, star, starOutline } from 'ionicons/icons';
+import { stopwatch, time, trash, star, starOutline, camera } from 'ionicons/icons';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Game, GameStats } from '../../models/GameSession';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './GameCard.styles';
@@ -18,6 +19,7 @@ interface Props {
   onToggleFavorite: () => void;
   onEditTime: (hours: number, minutes: number) => void;
   formatDuration: (minutes: number) => string;
+  onUpdateImage: (gameId: number, newImage: string) => void;
 }
 
 interface EditTimeModalProps {
@@ -39,17 +41,35 @@ export const GameCard: React.FC<Props> = ({
   onDelete,
   onToggleFavorite,
   onEditTime,
-  formatDuration
+  formatDuration,
+  onUpdateImage
 }) => {
   const [showEditTimeModal, setShowEditTimeModal] = useState(false);
   const totalHours = stats.totalTime / 60;
   const badge = getBadgeInfo(totalHours);
   const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
 
+  const handleImageClick = async () => {
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: true,
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Photos
+      });
+      
+      if (image.dataUrl) {
+        onUpdateImage(game.id, image.dataUrl);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sélection de l\'image:', error);
+    }
+  };
+
   return (
     <IonCard style={styles.card}>
       <div style={styles.container}>
-        <div style={styles.imageContainer}>
+        <div style={styles.imageContainer} onClick={handleImageClick}>
           {game.coverImage && game.coverImage !== 'N/A' ? (
             <img 
               src={game.coverImage} 
@@ -63,6 +83,9 @@ export const GameCard: React.FC<Props> = ({
           ) : (
             <NoImagePlaceholder name={game.name} />
           )}
+          <div style={styles.imageOverlay}>
+            <IonIcon icon={camera} style={styles.cameraIcon} />
+          </div>
         </div>
         
         <div style={styles.content}>
