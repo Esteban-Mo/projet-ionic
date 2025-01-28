@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { IonCard, IonButton, IonIcon, IonTooltip } from '@ionic/react';
+import { IonCard, IonButton, IonIcon } from '@ionic/react';
 import { stopwatch, time, trash, star, starOutline, camera, pencil } from 'ionicons/icons';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Game, GameStats } from '../../models/GameSession';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './GameCard.styles';
 import { EditTimeModal } from '../EditTimeModal/EditTimeModal';
 import { EditGameModal } from '../EditGameModal/EditGameModal';
+import { CameraService } from '../../services/CameraService';
 
 interface Props {
   game: Game;
@@ -54,19 +54,9 @@ export const GameCard = (props: Props) => {
   const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
 
   const handleImageClick = async () => {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: true,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Photos
-      });
-
-      if (image.dataUrl) {
-        onUpdateImage(game.id, image.dataUrl);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sélection de l\'image:', error);
+    const imageDataUrl = await CameraService.takePicture();
+    if (imageDataUrl) {
+      onUpdateImage(game.id, imageDataUrl);
     }
   };
 
