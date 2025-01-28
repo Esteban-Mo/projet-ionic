@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { IonCard, IonButton, IonIcon } from '@ionic/react';
-import { stopwatch, time, trash, star, starOutline, camera } from 'ionicons/icons';
+import { IonCard, IonButton, IonIcon, IonTooltip } from '@ionic/react';
+import { stopwatch, time, trash, star, starOutline, camera, pencil } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Game, GameStats } from '../../models/GameSession';
 import { NoImagePlaceholder } from '../NoImagePlaceholder/NoImagePlaceholder';
 import { styles } from './GameCard.styles';
 import { EditTimeModal } from '../EditTimeModal/EditTimeModal';
+import { EditGameModal } from '../EditGameModal/EditGameModal';
 
 interface Props {
   game: Game;
@@ -18,6 +19,7 @@ interface Props {
   onDelete: () => void;
   onToggleFavorite: () => void;
   onEditTime: (hours: number, minutes: number) => void;
+  onEditGame: (game: Game) => void;
   formatDuration: (minutes: number) => string;
   onUpdateImage: (gameId: number, newImage: string) => void;
 }
@@ -44,8 +46,9 @@ const formatLastPlayed = (date?: Date): string => {
 }; 
 
 export const GameCard = (props: Props) => {
-  const { game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, formatDuration, onUpdateImage } = props;
+  const { game, stats, isActiveGame, hasActiveSession, currentSessionTime, onStartSession, onEndSession, onDelete, onToggleFavorite, onEditTime, onEditGame, formatDuration, onUpdateImage } = props;
   const [showEditTimeModal, setShowEditTimeModal] = useState(false);
+  const [showEditGameModal, setShowEditGameModal] = useState(false);
   const totalHours = stats.totalTime / 60;
   const badge = getBadgeInfo(totalHours);
   const averageSessionTime = stats.sessionsCount > 0 ? stats.totalTime / stats.sessionsCount : 0;
@@ -92,12 +95,28 @@ export const GameCard = (props: Props) => {
         <div style={styles.content}>
           <div style={styles.header}>
             <div>
-              <h2 style={styles.title}>{game.name}</h2>
+              <h2 style={styles.title} title={game.name}>
+                {game.name}
+              </h2>
               {game.genre && (
                 <div style={styles.genre}>{game.genre}</div>
               )}
             </div>
             <div style={styles.actionButtons}>
+              <IonButton
+                fill="clear"
+                color="medium"
+                onClick={() => setShowEditGameModal(true)}
+                style={{
+                  ...styles.iconButton,
+                  opacity: 0.6
+                }}
+              >
+                <IonIcon
+                  icon={pencil}
+                  style={{ fontSize: '1.1em' }}
+                />
+              </IonButton>
               <IonButton
                 fill="clear"
                 color={game.isFavorite ? 'warning' : 'medium'}
@@ -211,6 +230,16 @@ export const GameCard = (props: Props) => {
         onSave={(hours, minutes) => {
           onEditTime(hours, minutes);
           setShowEditTimeModal(false);
+        }}
+      />
+
+      <EditGameModal
+        isOpen={showEditGameModal}
+        onClose={() => setShowEditGameModal(false)}
+        game={game}
+        onSave={(updatedGame) => {
+          onEditGame(updatedGame);
+          setShowEditGameModal(false);
         }}
       />
     </IonCard>

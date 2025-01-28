@@ -189,6 +189,13 @@ const GamingSessionsPage = () => {
     setGames(updatedGames);
   };
 
+  const editGame = (updatedGame: Game) => {
+    const updatedGames = games.map(game => 
+      game.id === updatedGame.id ? { ...game, name: updatedGame.name, description: updatedGame.description } : game
+    );
+    setGames(updatedGames);
+  };
+
   const sortedGames = [...games].sort((a, b) => {
     if (a.isFavorite === b.isFavorite) {
       return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -232,6 +239,7 @@ const GamingSessionsPage = () => {
                 onDelete={() => setGameToDelete(game)}
                 onToggleFavorite={() => toggleFavorite(game.id)}
                 onEditTime={(hours, minutes) => editGameTime(game.id, hours, minutes)}
+                onEditGame={editGame}
                 formatDuration={(minutes) => formatDuration(minutes, stats.sessionsCount > 0)}
                 onUpdateImage={updateGameImage}
               />

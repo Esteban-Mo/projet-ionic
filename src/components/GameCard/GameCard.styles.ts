@@ -62,7 +62,18 @@ export const styles = {
     margin: '0 0 8px 0',
     fontSize: '1.4em',
     fontWeight: '600',
-    color: 'var(--ion-text-color)'
+    color: 'var(--ion-text-color)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    wordBreak: 'break-word',
+    cursor: 'help',
+    transition: 'opacity 0.2s ease',
+    ':hover': {
+      opacity: 0.8
+    }
   },
   genre: {
     display: 'inline-block',
