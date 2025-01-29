@@ -38,9 +38,7 @@ export const AddGameModal = (props: Props) => {
           setSearchResults(results);
         } catch (error) {
           setSearchError(
-            error instanceof Error
-              ? error.message
-              : "Une erreur est survenue lors de la recherche"
+            error instanceof Error ? error.message : "Une erreur est survenue lors de la recherche"
           );
           setSearchResults([]);
         } finally {

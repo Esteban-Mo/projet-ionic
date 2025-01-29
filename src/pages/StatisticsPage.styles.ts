@@ -1,7 +1,7 @@
 export const styles = {
   statsGrid: {
     display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     gap: '16px',
     padding: '16px',
     maxWidth: '1200px',
@@ -28,7 +28,7 @@ export const styles = {
 
   statItem: {
     display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     alignItems: 'center',
     padding: '16px',
     borderRadius: '12px',
@@ -54,7 +54,7 @@ export const styles = {
   statLabel: {
     fontSize: '0.9em',
     color: 'rgba(255, 255, 255, 0.95)',
-    textAlign: 'center' as const,
+    textAlign: 'center',
   },
 
   chartCard: {
